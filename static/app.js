@@ -9,42 +9,109 @@ function getQueryVariable(variable) {
 	return (false);
 }
 
-angular.module("todo",["ngRoute","ngResource"])
+var app = angular.module("todo",["ngRoute","ngResource"])
 .config(["$routeProvider", function($routeProvider) {
     $routeProvider
         .when("/", {
             templateUrl: "/index.html",
-            controller: "sign"
+            controller: "SignInController"
         })
         .when("/signin", {
-            templateUrl: "../index.html",
-            controller: "sign"
+            templateUrl: "/index.html",
+            controller: "SignInController"
         })
         .when("/signup", {
-            templateUrl: "../signup.html",
-            controller: "reg"
+            templateUrl: "/signup.html",
+            controller: "RegistrationController"
         })
-        .when("/todos", {
-            templateUrl: "../todo.html",
-            controller: "todos"
+        .when("/todos?id=:userId", {
+            templateUrl: "/todo.html",
+            controller: "TodosController"
         })
         .when("/myinfo", {
-            templateUrl: "../myaccount.html",
-            controller: "info"
+            templateUrl: "/myaccount.html",
+            controller: "InfoController"
         })
         .otherwise({ redirectTo: "/" });
 }])
 
-.controller("SignInController",["$scope","$http","$window","$resource", function ($scope,$http,$window,$resource){
+app.factory("Login", ["$resource", function($resource) {
+   return $resource("/signin", null,
+       {
+           "signin": { method: "POST" }
+       });
+    }]);
+
+app.factory("Account", ["$resource", function($resource) {
+	   return $resource("/myaccount", null,{
+		   "saveData": {method: "PUT"}
+	   });
+	}]);
+
+app.factory("Register", ["$resource", function($resource) {
+	   return $resource("/account", null,{
+		   "signUp": {method: "POST"}
+	   });
+	}]);
+
+app.factory("Todos", ["$resource", function($resource) {
+	   return $resource("/todo", null,{
+		   "insert": {method: "POST"}
+	   });
+	}]);
+
+app.factory("TodosDelete", ["$resource", function($resource) {
+	   return $resource("/todo/:task/:id", null,{
+		   "deleteTodo": {method: "DELETE"}
+	   });
+	}]);
+
+app.factory("MarkAllTodos", ["$resource", function($resource) {
+	   return $resource("/mark/markAll", null,{
+		   "markAll": {method: "POST"}
+	   });
+	}]);
+
+app.factory("UnmarkAllTodos", ["$resource", function($resource) {
+	   return $resource("/mark/unmarkAll", null,{
+		   "unmarkAll": {method: "POST"}
+	   });
+	}]);
+
+app.factory("MarkSingleTodo", ["$resource", function($resource) {
+	   return $resource("/mark/mark", null,{
+		   "mark": {method: "POST"}
+	   });
+	}]);
+
+app.factory("UnmarkSingleTodo", ["$resource", function($resource) {
+	   return $resource("/mark/unmark", null,{
+		   "unmark": {method: "POST"}
+	   });
+	}]);
+
+app.factory("DeleteAllTodos", ["$resource", function($resource) {
+	   return $resource("/todo/all/:id", null,{
+		   "deleteAll": {method: "DELETE"}
+	   });
+	}]);
+
+app.factory("DeleteCompleted", ["$resource", function($resource) {
+	   return $resource("/todo/allCompleted", null,{
+		   "deleteAllCompletedTodos": {method: "PUT"}
+	   });
+	}]);
+
+app.factory("SaveTodo", ["$resource", function($resource) {
+	   return $resource("/todo/:task", null,{
+		   "editTodo": {method: "PUT"}
+	   });
+	}]);
+
+app.controller("SignInController",["$scope","$http","$window","$resource","Login", function ($scope,$http,$window,$resource,Login){
 //post sign in request passing email and password to the server for a check, if success sign in user, if not error message
 	$scope.signin = function () {
-		var signIn = $resource( "/signin", 
-			{}, { 
-				signin: { 
-					method: "POST", 
-				}
-				});
-	signIn.signin({email: $scope.yourEmail,
+	Login.signin({email: $scope.yourEmail,
 				   pass: $scope.yourPass},function(items){
 					   if(items.success){
 						   alert("Credentials correct. Logging you in")
@@ -56,29 +123,21 @@ angular.module("todo",["ngRoute","ngResource"])
 	}
 }])
 
-.controller("info",["$scope","$http","$window","$resource", function ($scope,$http,$window,$resource){
+app.controller("InfoController",["$scope","$http","$window","$resource","Account", function ($scope,$http,$window,$resource,Account){
 	//get request for displaying user specific information		
-	var Todos = $resource("/myaccount");
-	Todos.get(function(items){
+	Account.get(function(items){
 		for(var i = 0; i < items.users.length; i++){
 			if(items.users[i]["id"] == getQueryVariable("id")) {
 				$scope.first_name = items.users[i]["first_name"];
 				$scope.last_name = items.users[i]["last_name"];
 				$scope.company = items.users[i]["company"];
-				if(!$scope.$$phase) $scope.$apply();
 			}
 		}
 	})
 
 //save function to save the edited fields of my info section
 	$scope.save = function(){
-		var Save = $resource("/myaccount", 
-			{}, { 
-				save: { 
-					method: "PUT", 
-				}
-				});
-		save.save({first_name: $scope.first_name,
+		Account.saveData({first_name: $scope.first_name,
 				   last_name: $scope.last_name,
 			       company: $scope.company,
 			       id: getQueryVariable("id")},function(items){
@@ -97,7 +156,7 @@ angular.module("todo",["ngRoute","ngResource"])
 	}
 }])
 
-.controller("reg",["$scope","$http","$window","$resource", function ($scope,$http,$window,$resource){
+app.controller("RegistrationController",["$scope","$http","$window","$resource","Register", function ($scope,$http,$window,$resource,Register){
 	$scope.yourEmail = "abv@abv.bg";
 	$scope.yourPass = "test";
 	$scope.yourCompany = "test";
@@ -116,13 +175,7 @@ angular.module("todo",["ngRoute","ngResource"])
            	alert("Card not valid. Selected time in the past");
         }
         else{
-        	var reg = $resource( "/account", 
-   				{}, { 
-   					register: { 
-   						method: "POST", 
-   					}
-   					});
-    		reg.register({email: $scope.yourEmail,
+        	Register.signUp({email: $scope.yourEmail,
    					      pass: $scope.yourPass,
    					      company: $scope.yourCompany,
    					      firstName: $scope.yourFName,
@@ -192,12 +245,18 @@ angular.module("todo",["ngRoute","ngResource"])
     $scope.goBack = function(){
     	$window.location="/signin";
     }
+    
+    if(typeof(Storage) !== "undefined") {
+        alert("syper");
+    } else {
+        // Sorry! No Web Storage support..
+    }
+    
 }])
 
-.controller("todos",["$scope","$window","$http","$resource","filterFilter", function ($scope,$window,$http,$resource,filterFilter) {
+app.controller("TodosController",["$scope","$window","$http","$resource","Todos","TodosDelete","MarkAllTodos","UnmarkAllTodos","MarkSingleTodo","UnmarkSingleTodo","DeleteAllTodos","DeleteCompleted","SaveTodo", function ($scope,$window,$http,$resource,Todos,TodosDelete,MarkAllTodos,UnmarkAllTodos,MarkSingleTodo,UnmarkSingleTodo,DeleteAllTodos,DeleteCompleted,SaveTodo) {
 	$scope.items = [];
 	$scope.userId = getQueryVariable("id");
-	var Todos = $resource("/todo");
 	Todos.get(function(items){
 		for(var i = 0; i < items.todoList.length; i++){
 			if(items.todoList[i]["user_id"] == getQueryVariable("id")) {
@@ -210,7 +269,6 @@ angular.module("todo",["ngRoute","ngResource"])
 		for(var i = 0; i < items.userIds.length; i++){
 			if(items.userIds[i]["id"] == getQueryVariable("id")) {
 				$scope.username = items.userIds[i]["first_name"]; 
-				//if(!$scope.$$phase) $scope.$apply();
 			}
 		}
 		angular.forEach($scope.items, function(item) {
@@ -230,31 +288,30 @@ angular.module("todo",["ngRoute","ngResource"])
 			$scope.todoText = "";
 			return;
 		}
-        var add = $resource( "/todo", 
-			{}, { 
-				add: { 
-					method: "POST", 
-				}
-		});
-		add.add({task: $scope.todoText,
-				 id: getQueryVariable("id")},function(items){
-					 if(items.success){
-					 } else {
-						 alert("Adding of item failed");
+		if($scope.todoText){
+	       Todos.insert({task: $scope.todoText,
+					 id: getQueryVariable("id")},function(items){
+						 if(items.success){
+						 } else {
+							 alert("Adding of item failed");
+						 }
 					 }
-				 }
-		)
-		Todos.get(function(items){
-			$scope.items = [];
-			for(var i = 0; i < items.todoList.length; i++){
-				if(items.todoList[i]["user_id"] == getQueryVariable("id")) $scope.items.push(items.todoList[i]);
-				else $scope.items = [];
-	    	}
-			angular.forEach($scope.items, function(item) {
-				if(item.done == 1) item.done = true;
-	    	});
-			$scope.mark = false;
-	    })
+			)
+			Todos.get(function(items){
+				$scope.items = [];
+				for(var i = 0; i < items.todoList.length; i++){
+					if(items.todoList[i]["user_id"] == getQueryVariable("id")) $scope.items.push(items.todoList[i]);
+					else $scope.items = [];
+		    	}
+				angular.forEach($scope.items, function(item) {
+					if(item.done == 1) item.done = true;
+		    	});
+				$scope.mark = false;
+		    })
+		}
+		else{
+			alert("Inserting empty item is not allowed");
+		}
 	    $scope.todoText = "";
 	};
 
@@ -269,8 +326,7 @@ angular.module("todo",["ngRoute","ngResource"])
 	
 //delete particular task
 	$scope.deleteTodo = function(item,task,id){
-		var deleteTodo = $resource("/todo/" + task + "/"+ id);
-		deleteTodo.delete(function(items){
+		TodosDelete.deleteTodo({task: task, id:id},function(items){
 			if(items.success) $scope.items.splice($scope.items.indexOf(item), 1);
 			else alert("Error in deleting");
 		})
@@ -286,18 +342,12 @@ angular.module("todo",["ngRoute","ngResource"])
 		$window.location="/myinfo?id=" + getQueryVariable("id");
 	}
 
-	$scope.markAll = function(userId){
+	$scope.markAll = function(id){
 		if($scope.items.length != 0){
-		    var markAll = $resource( "/mark/" + "markAll" + "/" + userId, 
-				{}, { 
-					markAll: { 
-						method: "POST", 
-					}
-			});
-			markAll.markAll({},function(items){
+			MarkAllTodos.markAll({},{id:id},function(items){
 							   if(items.success){
 							   } else {
-								   alert("Marking of item failed");
+								   alert("Marking of items failed");
 							   }
 			})
 			Todos.get(function(items){
@@ -309,7 +359,6 @@ angular.module("todo",["ngRoute","ngResource"])
 				for(var i = 0; i < items.userIds.length; i++){
 					if(items.userIds[i]["id"] == getQueryVariable("id")) {
 						$scope.username = items.userIds[i]["first_name"]; 
-						if(!$scope.$$phase) $scope.$apply();
 					}
 				}
 				angular.forEach($scope.items, function(item) {
@@ -323,18 +372,12 @@ angular.module("todo",["ngRoute","ngResource"])
 			alert("No items yet");
 		}
 	}
-	$scope.unmarkAll = function(userId){
+	$scope.unmarkAll = function(id){
 		if($scope.items.length != 0){
-			var unmarkAll = $resource( "/mark/" + "unmarkAll" + "/" + userId, 
-				{}, { 
-					unmarkAll: { 
-						method: "POST", 
-					}
-			});
-			unmarkAll.unmarkAll({},function(items){
+			UnmarkAllTodos.unmarkAll({},{id:id},function(items){
 							   if(items.success){
 							   } else {
-								   alert("Unmarking of item failed");
+								   alert("Unmarking of items failed");
 							   }
 						   })
 			Todos.get(function(items){
@@ -346,7 +389,6 @@ angular.module("todo",["ngRoute","ngResource"])
 				for(var i = 0; i < items.userIds.length; i++){
 					if(items.userIds[i]["id"] == getQueryVariable("id")) {
 						$scope.username = items.userIds[i]["first_name"]; 
-						if(!$scope.$$phase) $scope.$apply();
 					}
 				}
 				angular.forEach($scope.items, function(item) {
@@ -362,15 +404,9 @@ angular.module("todo",["ngRoute","ngResource"])
 	} 
 
 // change status of task either done or not
-	$scope.change = function (item,done,userId){
+	$scope.change = function (item,done,id){
 		if(done==true){
-	        var mark = $resource("/mark/"  + "mark" + "/" + userId, 
-				{}, { 
-					mark: { 
-						method: "POST", 
-					}
-			});
-		mark.mark({task: item.task},function(items){
+	        MarkSingleTodo.mark({},{id: id,task: item.task},function(items){
 						   if(items.success){
 						   } else {
 							   alert("Marking of item failed");
@@ -385,7 +421,6 @@ angular.module("todo",["ngRoute","ngResource"])
 			for(var i = 0; i < items.userIds.length; i++){
 				if(items.userIds[i]["id"] == getQueryVariable("id")) {
 					$scope.username = items.userIds[i]["first_name"]; 
-					if(!$scope.$$phase) $scope.$apply();
 				}
 			}
 			angular.forEach($scope.items, function(item) {
@@ -396,13 +431,7 @@ angular.module("todo",["ngRoute","ngResource"])
 		})
 		}
 		else {
-	        var unmark = $resource("/mark/"  + "unmark" + "/" + userId, 
-				{}, { 
-					unmark: { 
-						method: "POST", 
-					}
-			});
-			unmark.unmark({task: item.task},function(items){
+	        UnmarkSingleTodo.unmark({},{id: id,task: item.task},function(items){
 						   if(items.success){
 						   } else {
 							   alert("Unmarking of item failed");
@@ -416,8 +445,7 @@ angular.module("todo",["ngRoute","ngResource"])
 				}
 				for(var i = 0; i < items.userIds.length; i++){
 					if(items.userIds[i]["id"] == getQueryVariable("id")) {
-						$scope.username = items.userIds[i]["first_name"]; 
-						if(!$scope.$$phase) $scope.$apply();
+						$scope.username = items.userIds[i]["first_name"];
 					}
 				}
 				angular.forEach($scope.items, function(item) {
@@ -429,8 +457,7 @@ angular.module("todo",["ngRoute","ngResource"])
 
 // delete all todos from the list
 	$scope.deleteAll = function(){
-		var deleteAll = $resource("/todo/" + "all" + "/" + getQueryVariable("id"));
-		deleteAll.delete(function(items){
+		DeleteAllTodos.deleteAll({id: getQueryVariable("id")},getQueryVariable("id"),function(items){
 			if(items.success) {
 				$scope.items = [];
 			    $scope.mark = false;
@@ -439,14 +466,8 @@ angular.module("todo",["ngRoute","ngResource"])
 	}
 
 // deletes all todos marked as done
-	 $scope.deleteAllCompleted = function(userId){
-	     	var deleteAllCompleted = $resource("/todo/" + "allCompleted/"+ userId, 
-				{}, { 
-					deleteAllCompleted: { 
-						method: "PUT", 
-					}
-			});
-	     	deleteAllCompleted.deleteAllCompleted({tasks: $scope.items},function(items){
+	 $scope.deleteAllCompleted = function(id){
+		 DeleteCompleted.deleteAllCompletedTodos({},{id:id,tasks: $scope.items},function(items){
 	     		if(items.success){
 	     			Todos.get(function(items){
 	     				$scope.items = [];
@@ -456,8 +477,7 @@ angular.module("todo",["ngRoute","ngResource"])
 	     				}
 	     				for(var i = 0; i < items.userIds.length; i++){
 	     					if(items.userIds[i]["id"] == getQueryVariable("id")) {
-	     						$scope.username = items.userIds[i]["first_name"]; 
-	     						if(!$scope.$$phase) $scope.$apply();
+	     						$scope.username = items.userIds[i]["first_name"];
 	     					}
 	     				}
 	     				angular.forEach($scope.items, function(item) {
@@ -471,15 +491,9 @@ angular.module("todo",["ngRoute","ngResource"])
 	}
 	
 //save an edited todo task
-	$scope.saveTodo = function(newTask,task,userId){
+	$scope.saveTodo = function(newTask,task,id){
 		if(newTask){
-	    var saveTodo = $resource("/todo/" + task + "/" + userId, 
-			{}, { 
-				saveTodo: { 
-					method: "PUT", 
-				}
-		});
-	    saveTodo.saveTodo({newTask: newTask},function(items){
+	    SaveTodo.editTodo({task:task},{id:id,newTask: newTask},function(items){
 						   if(items.success){
 						   } else {
 							   alert("Editting of task failed");
@@ -493,8 +507,7 @@ angular.module("todo",["ngRoute","ngResource"])
 			}
 			for(var i = 0; i < items.userIds.length; i++){
 				if(items.userIds[i]["id"] == getQueryVariable("id")) {
-					$scope.username = items.userIds[i]["first_name"]; 
-					if(!$scope.$$phase) $scope.$apply();
+					$scope.username = items.userIds[i]["first_name"];
 				}
 			}
 			angular.forEach($scope.items, function(item) {

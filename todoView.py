@@ -48,35 +48,36 @@ class todoDelete (flask.views.MethodView):
         conn.commit()
         return jsonify({ "success": True })
 
-# put request
-    def put(self,task,user):
+class todoPut(flask.views.MethodView):
+    # put request
+    def put(self,task):
         conn = sqlite3.connect("todo.sqlite")
         c = conn.cursor()
         args = json.loads(request.data)
         if task == "allCompleted":
             for task in args["tasks"]:
                 if task["done"] == 1:
-                    c.execute("DELETE FROM task WHERE title = ? AND user_id = ?",(task["task"],user))
+                    c.execute("DELETE FROM task WHERE title = ? AND user_id = ?",(task["task"],args["id"]))
         else:
-            c.execute("UPDATE task SET title = ? WHERE title = ? AND user_id = ? ", (args["newTask"],task,user))
+            c.execute("UPDATE task SET title = ? WHERE title = ? AND user_id = ? ", (args["newTask"],task,args["id"]))
         conn.commit()
         return jsonify({ "success": True })
     
 class mark(flask.views.MethodView):
     
 # post request
-    def post(self,action,user):
+    def post(self,action):
         conn = sqlite3.connect("todo.sqlite")
         c = conn.cursor()
         args = json.loads(request.data)
         if action == "markAll":
-            c.execute("UPDATE task SET done = 1 WHERE user_id = ? ",(user,))
+            c.execute("UPDATE task SET done = 1 WHERE user_id = ? ",(args["id"],))
         elif action == "unmarkAll":
-            c.execute("UPDATE task SET done = 0 WHERE user_id = ? ",(user,))
+            c.execute("UPDATE task SET done = 0 WHERE user_id = ? ",(args["id"],))
         elif action == "mark":
-            c.execute("UPDATE task SET done = 1 WHERE title = ? AND user_id = ?",(args["task"],user))
+            c.execute("UPDATE task SET done = 1 WHERE title = ? AND user_id = ?",(args["task"],args["id"]))
         elif action == "unmark":
-            c.execute("UPDATE task SET done = 0 WHERE title = ? AND user_id = ?",(args["task"],user))
+            c.execute("UPDATE task SET done = 0 WHERE title = ? AND user_id = ?",(args["task"],args["id"]))
         conn.commit()
         return jsonify({ "success": True })
 
