@@ -1,14 +1,3 @@
-// function to get the parameter of the url ( eg http://127.0.0.1:5000/todos?id=93 extract 93, when using like this getQueryVariable("id"))
-function getQueryVariable(variable) {
-	var query = window.location.search.substring(1);
-    var vars = query.split("&");
-	for (var i = 0; i < vars.length; i++) {
-		var pair = vars[i].split("=");
-		if (pair[0] == variable) { return pair[1]; }
-	}
-	return (false);
-}
-
 var app = angular.module("todo",["ngRoute","ngResource"])
 .config(["$routeProvider", function($routeProvider) {
     $routeProvider
@@ -24,7 +13,7 @@ var app = angular.module("todo",["ngRoute","ngResource"])
             templateUrl: "/signup.html",
             controller: "RegistrationController"
         })
-        .when("/todos?id=:userId", {
+        .when("/todos", {
             templateUrl: "/todo.html",
             controller: "TodosController"
         })
@@ -61,7 +50,7 @@ app.factory("Todos", ["$resource", function($resource) {
 	}]);
 
 app.factory("TodosDelete", ["$resource", function($resource) {
-	   return $resource("/todo/:task/:id", null,{
+	   return $resource("/todo/:task", null,{
 		   "deleteTodo": {method: "DELETE"}
 	   });
 	}]);
@@ -91,7 +80,7 @@ app.factory("UnmarkSingleTodo", ["$resource", function($resource) {
 	}]);
 
 app.factory("DeleteAllTodos", ["$resource", function($resource) {
-	   return $resource("/todo/all/:id", null,{
+	   return $resource("/todo/all", null,{
 		   "deleteAll": {method: "DELETE"}
 	   });
 	}]);
@@ -115,7 +104,7 @@ app.controller("SignInController",["$scope","$http","$window","$resource","Login
 				   pass: $scope.yourPass},function(items){
 					   if(items.success){
 						   alert("Credentials correct. Logging you in")
-						   $window.location="/todos?id=" + items.id;
+						   $window.location="/todos";
 					   } else {
 							alert("Wrong email or pass");
 					   }
@@ -126,21 +115,16 @@ app.controller("SignInController",["$scope","$http","$window","$resource","Login
 app.controller("InfoController",["$scope","$http","$window","$resource","Account", function ($scope,$http,$window,$resource,Account){
 	//get request for displaying user specific information		
 	Account.get(function(items){
-		for(var i = 0; i < items.users.length; i++){
-			if(items.users[i]["id"] == getQueryVariable("id")) {
-				$scope.first_name = items.users[i]["first_name"];
-				$scope.last_name = items.users[i]["last_name"];
-				$scope.company = items.users[i]["company"];
-			}
-		}
+		$scope.first_name = items.users[0]["first_name"];
+		$scope.last_name = items.users[0]["last_name"];
+		$scope.company = items.users[0]["company"];
 	})
 
 //save function to save the edited fields of my info section
 	$scope.save = function(){
 		Account.saveData({first_name: $scope.first_name,
 				   last_name: $scope.last_name,
-			       company: $scope.company,
-			       id: getQueryVariable("id")},function(items){
+			       company: $scope.company},function(items){
 					   if(items.success){
 						   alert("Information saved");
 					   } else {
@@ -152,7 +136,7 @@ app.controller("InfoController",["$scope","$http","$window","$resource","Account
 
 //go back button to todos list
 	$scope.todos = function(){
-		$window.location="/todos?id=" + getQueryVariable("id");
+		$window.location="/todos";
 	}
 }])
 
@@ -217,7 +201,7 @@ app.controller("RegistrationController",["$scope","$http","$window","$resource",
    					    		    	  alert("Something went wrong!");
    					    		      });
    					    		  alert("Registration succeeded. Logging you in.")
-   					    		  $window.location="/todos?id=" + items.id;
+   					    		  $window.location="/todos";
    					    	  } else {
    					    		  alert("Email already taken, please choose another one");
    					    	  }
@@ -246,31 +230,13 @@ app.controller("RegistrationController",["$scope","$http","$window","$resource",
     	$window.location="/signin";
     }
     
-    if(typeof(Storage) !== "undefined") {
-        alert("syper");
-    } else {
-        // Sorry! No Web Storage support..
-    }
-    
 }])
 
 app.controller("TodosController",["$scope","$window","$http","$resource","Todos","TodosDelete","MarkAllTodos","UnmarkAllTodos","MarkSingleTodo","UnmarkSingleTodo","DeleteAllTodos","DeleteCompleted","SaveTodo", function ($scope,$window,$http,$resource,Todos,TodosDelete,MarkAllTodos,UnmarkAllTodos,MarkSingleTodo,UnmarkSingleTodo,DeleteAllTodos,DeleteCompleted,SaveTodo) {
 	$scope.items = [];
-	$scope.userId = getQueryVariable("id");
 	Todos.get(function(items){
-		for(var i = 0; i < items.todoList.length; i++){
-			if(items.todoList[i]["user_id"] == getQueryVariable("id")) {
-				$scope.items.push(items.todoList[i]);
-			}
-			else {
-				$scope.items = [];
-			}
-		}
-		for(var i = 0; i < items.userIds.length; i++){
-			if(items.userIds[i]["id"] == getQueryVariable("id")) {
-				$scope.username = items.userIds[i]["first_name"]; 
-			}
-		}
+		$scope.items = items.todoList;
+		$scope.username = items.username; 
 		angular.forEach($scope.items, function(item) {
 	  		if(item.done == 1) item.done = true;
 		});
@@ -289,8 +255,7 @@ app.controller("TodosController",["$scope","$window","$http","$resource","Todos"
 			return;
 		}
 		if($scope.todoText){
-	       Todos.insert({task: $scope.todoText,
-					 id: getQueryVariable("id")},function(items){
+	       Todos.insert({task: $scope.todoText},function(items){
 						 if(items.success){
 						 } else {
 							 alert("Adding of item failed");
@@ -298,11 +263,7 @@ app.controller("TodosController",["$scope","$window","$http","$resource","Todos"
 					 }
 			)
 			Todos.get(function(items){
-				$scope.items = [];
-				for(var i = 0; i < items.todoList.length; i++){
-					if(items.todoList[i]["user_id"] == getQueryVariable("id")) $scope.items.push(items.todoList[i]);
-					else $scope.items = [];
-		    	}
+				$scope.items = items.todoList;
 				angular.forEach($scope.items, function(item) {
 					if(item.done == 1) item.done = true;
 		    	});
@@ -325,8 +286,8 @@ app.controller("TodosController",["$scope","$window","$http","$resource","Todos"
 	  };
 	
 //delete particular task
-	$scope.deleteTodo = function(item,task,id){
-		TodosDelete.deleteTodo({task: task, id:id},function(items){
+	$scope.deleteTodo = function(item,task){
+		TodosDelete.deleteTodo({task: task},function(items){
 			if(items.success) $scope.items.splice($scope.items.indexOf(item), 1);
 			else alert("Error in deleting");
 		})
@@ -339,28 +300,19 @@ app.controller("TodosController",["$scope","$window","$http","$resource","Todos"
 
 // redirect to my info
 	$scope.myaccount = function(){
-		$window.location="/myinfo?id=" + getQueryVariable("id");
+		$window.location="/myinfo";
 	}
 
-	$scope.markAll = function(id){
+	$scope.markAll = function(){
 		if($scope.items.length != 0){
-			MarkAllTodos.markAll({},{id:id},function(items){
+			MarkAllTodos.markAll(function(items){
 							   if(items.success){
 							   } else {
 								   alert("Marking of items failed");
 							   }
 			})
 			Todos.get(function(items){
-				$scope.items = [];
-				for(var i = 0; i < items.todoList.length; i++){
-					if(items.todoList[i]["user_id"] == getQueryVariable("id")) $scope.items.push(items.todoList[i]);
-					else $scope.items = [];
-				}
-				for(var i = 0; i < items.userIds.length; i++){
-					if(items.userIds[i]["id"] == getQueryVariable("id")) {
-						$scope.username = items.userIds[i]["first_name"]; 
-					}
-				}
+				$scope.items = items.todoList;
 				angular.forEach($scope.items, function(item) {
 			  		if(item.done == 1) item.done = true;
 				});
@@ -372,25 +324,16 @@ app.controller("TodosController",["$scope","$window","$http","$resource","Todos"
 			alert("No items yet");
 		}
 	}
-	$scope.unmarkAll = function(id){
+	$scope.unmarkAll = function(){
 		if($scope.items.length != 0){
-			UnmarkAllTodos.unmarkAll({},{id:id},function(items){
+			UnmarkAllTodos.unmarkAll(function(items){
 							   if(items.success){
 							   } else {
 								   alert("Unmarking of items failed");
 							   }
 						   })
 			Todos.get(function(items){
-				$scope.items = [];
-				for(var i = 0; i < items.todoList.length; i++){
-					if(items.todoList[i]["user_id"] == getQueryVariable("id")) $scope.items.push(items.todoList[i]);
-					else $scope.items = [];
-				}
-				for(var i = 0; i < items.userIds.length; i++){
-					if(items.userIds[i]["id"] == getQueryVariable("id")) {
-						$scope.username = items.userIds[i]["first_name"]; 
-					}
-				}
+				$scope.items = items.todoList;
 				angular.forEach($scope.items, function(item) {
 			  		if(item.done == 1) item.done = true;
 				});
@@ -404,25 +347,16 @@ app.controller("TodosController",["$scope","$window","$http","$resource","Todos"
 	} 
 
 // change status of task either done or not
-	$scope.change = function (item,done,id){
+	$scope.change = function (item,done){
 		if(done==true){
-	        MarkSingleTodo.mark({},{id: id,task: item.task},function(items){
+	        MarkSingleTodo.mark({},{task: item.task},function(items){
 						   if(items.success){
 						   } else {
 							   alert("Marking of item failed");
 						   }
 		})
 		Todos.get(function(items){
-			$scope.items = [];
-			for(var i = 0; i < items.todoList.length; i++){
-				if(items.todoList[i]["user_id"] == getQueryVariable("id")) $scope.items.push(items.todoList[i]);
-				else $scope.items = [];
-			}
-			for(var i = 0; i < items.userIds.length; i++){
-				if(items.userIds[i]["id"] == getQueryVariable("id")) {
-					$scope.username = items.userIds[i]["first_name"]; 
-				}
-			}
+			$scope.items = items.todoList;
 			angular.forEach($scope.items, function(item) {
 				if(item.done == 1) item.done = true;
 			});
@@ -431,23 +365,14 @@ app.controller("TodosController",["$scope","$window","$http","$resource","Todos"
 		})
 		}
 		else {
-	        UnmarkSingleTodo.unmark({},{id: id,task: item.task},function(items){
+	        UnmarkSingleTodo.unmark({},{task: item.task},function(items){
 						   if(items.success){
 						   } else {
 							   alert("Unmarking of item failed");
 						   }
 			})
 			Todos.get(function(items){
-				$scope.items = [];
-				for(var i = 0; i < items.todoList.length; i++){
-					if(items.todoList[i]["user_id"] == getQueryVariable("id")) $scope.items.push(items.todoList[i]);
-					else $scope.items = [];
-				}
-				for(var i = 0; i < items.userIds.length; i++){
-					if(items.userIds[i]["id"] == getQueryVariable("id")) {
-						$scope.username = items.userIds[i]["first_name"];
-					}
-				}
+				$scope.items = items.todoList;
 				angular.forEach($scope.items, function(item) {
 			  		if(item.done == 1) item.done = true;
 				});
@@ -457,7 +382,7 @@ app.controller("TodosController",["$scope","$window","$http","$resource","Todos"
 
 // delete all todos from the list
 	$scope.deleteAll = function(){
-		DeleteAllTodos.deleteAll({id: getQueryVariable("id")},getQueryVariable("id"),function(items){
+		DeleteAllTodos.deleteAll({},function(items){
 			if(items.success) {
 				$scope.items = [];
 			    $scope.mark = false;
@@ -466,20 +391,11 @@ app.controller("TodosController",["$scope","$window","$http","$resource","Todos"
 	}
 
 // deletes all todos marked as done
-	 $scope.deleteAllCompleted = function(id){
-		 DeleteCompleted.deleteAllCompletedTodos({},{id:id,tasks: $scope.items},function(items){
+	 $scope.deleteAllCompleted = function(){
+		 DeleteCompleted.deleteAllCompletedTodos({},{tasks: $scope.items},function(items){
 	     		if(items.success){
 	     			Todos.get(function(items){
-	     				$scope.items = [];
-	     				for(var i = 0; i < items.todoList.length; i++){
-	     					if(items.todoList[i]["user_id"] == getQueryVariable("id")) $scope.items.push(items.todoList[i]);
-	     					else $scope.items = [];
-	     				}
-	     				for(var i = 0; i < items.userIds.length; i++){
-	     					if(items.userIds[i]["id"] == getQueryVariable("id")) {
-	     						$scope.username = items.userIds[i]["first_name"];
-	     					}
-	     				}
+	     				$scope.items = items.todoList;
 	     				angular.forEach($scope.items, function(item) {
 	     					if(item.done == 1) item.done = true;
 	     				});
@@ -491,25 +407,16 @@ app.controller("TodosController",["$scope","$window","$http","$resource","Todos"
 	}
 	
 //save an edited todo task
-	$scope.saveTodo = function(newTask,task,id){
+	$scope.saveTodo = function(newTask,task){
 		if(newTask){
-	    SaveTodo.editTodo({task:task},{id:id,newTask: newTask},function(items){
+	    SaveTodo.editTodo({task:task},{newTask: newTask},function(items){
 						   if(items.success){
 						   } else {
 							   alert("Editting of task failed");
 						   }
 					   })
 		Todos.get(function(items){
-			$scope.items = [];
-			for(var i = 0; i < items.todoList.length; i++){
-				if(items.todoList[i]["user_id"] == getQueryVariable("id")) $scope.items.push(items.todoList[i]);
-				else $scope.items = [];
-			}
-			for(var i = 0; i < items.userIds.length; i++){
-				if(items.userIds[i]["id"] == getQueryVariable("id")) {
-					$scope.username = items.userIds[i]["first_name"];
-				}
-			}
+			$scope.items = items.todoList;
 			angular.forEach($scope.items, function(item) {
 		  		if(item.done == 1) item.done = true;
 			});

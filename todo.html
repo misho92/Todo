@@ -23,20 +23,20 @@
 		    <span>Total: {{items.length}}</span>
 		    <p></p>
 		    <div ng-repeat="item in items">
-			    <input type="checkbox" ng-model="item.done" ng-change="change(item,item.done,userId)">
+			    <input type="checkbox" ng-model="item.done" ng-change="change(item,item.done)">
 			    <input type="text" ng-model="item.task" size="100" style="width: 500px" readonly>
-			    <button class="btn-primary" ng-model="userId" ng-click="deleteTodo(item,item.task,userId)"> Delete</button>
+			    <button class="btn-primary" ng-click="deleteTodo(item,item.task)"> Delete</button>
 			    <button class="btn-primary" ng-click="editTodo = true"> Edit</button>
 			    <div ng-show="editTodo" class="popup">
 				    <input ng-model="edittedTodo" type="text" size="100" style="width: 500px" placeholder="{{place(item.task)}}"/>
-				    <button class="btn-primary" ng-click="saveTodo(edittedTodo,item.task,userId)"> Save ToDo</button>
+				    <button class="btn-primary" ng-click="saveTodo(edittedTodo,item.task)"> Save ToDo</button>
 		    	</div>
 		    </div>
-		    <input type="checkbox" ng-model="mark" ng-click="markAll(userId)"> Mark all as completed </input>
+		    <input type="checkbox" ng-model="mark" ng-click="markAll()"> Mark all as completed </input>
 		    &nbsp &nbsp &nbsp
-		    <input type="checkbox" ng-model="unmark" ng-click="unmarkAll(userId)"> Unmark all as completed </input>
+		    <input type="checkbox" ng-model="unmark" ng-click="unmarkAll()"> Unmark all as completed </input>
 		    <p></p>
-		    <button class="btn-primary" ng-if="left() != items.length && left()!=0" ng-click="deleteAllCompleted(userId)"> Delete All Completed</button>
+		    <button class="btn-primary" ng-if="left() != items.length && left()!=0" ng-click="deleteAllCompleted()"> Delete All Completed</button>
 		    <p></p>
 		    <span ng-if="left()==0 && items.length!=0" class="animate-if">
 		    	<button class="btn-primary" ng-click="deleteAll()"> Delete All</button>
