@@ -1,6 +1,9 @@
 from __future__ import with_statement
-from flask import Flask, send_file, make_response
+from flask import Flask, send_file, make_response,jsonify,request,redirect
 from todoView import todo,mark,account,signin,myinfo,todoPutAndDelete
+import sqlite3
+from werkzeug.security import check_password_hash
+from flask_httpauth import HTTPBasicAuth
 
 # set flask app options
 app = Flask(__name__)
@@ -17,7 +20,34 @@ app.add_url_rule("/myaccount", view_func=myinfo.as_view("myinfo"), methods=["GET
 
 # make_response(open("index.html").read()) for no caching
 
+
+auth = HTTPBasicAuth()
+
+@auth.get_password
+def get_password(email):
+    conn = sqlite3.connect("todo.sqlite")
+    c = conn.cursor()
+    try:
+        c.execute("SELECT COUNT(*) FROM user WHERE email = ? ", (email,))
+        exists = c.fetchone()[0]
+        c.execute("SELECT password FROM user WHERE email = ? ", (email,))
+        password = c.fetchone()[0]
+        result = check_password_hash(password, request.authorization.password)
+        c.execute("SELECT id FROM user WHERE email = ? ", (email,))
+        id = c.fetchone()[0]
+    except:
+            return jsonify({ "success": False })
+    if exists == 1 and result == True:
+        signin.post(signin(),id)
+        return request.authorization.password
+    return None
+
+@auth.error_handler
+def unauthorized():
+    return make_response(jsonify( { "error": "Unauthorized access" } ), 401)
+
 @app.route("/todos")
+@auth.login_required
 def todos():
     return send_file("todo.html")
 
@@ -34,6 +64,7 @@ def index():
     return send_file("index.html")
 
 @app.route("/signin")
+@auth.login_required
 def sigin():
     return send_file("index.html")
 
@@ -42,6 +73,7 @@ def signup():
     return send_file("signup.html")
 
 @app.route("/myinfo")
+@auth.login_required
 def myaccount():
     return send_file("myaccount.html")
 

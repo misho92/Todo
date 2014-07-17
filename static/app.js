@@ -97,19 +97,13 @@ app.factory("SaveTodo", ["$resource", function($resource) {
 	   });
 	}]);
 
-app.controller("SignInController",["$scope","$http","$window","$resource","Login", function ($scope,$http,$window,$resource,Login){
-//post sign in request passing email and password to the server for a check, if success sign in user, if not error message
-	$scope.signin = function () {
-	Login.signin({email: $scope.yourEmail,
-				   pass: $scope.yourPass},function(items){
-					   if(items.success){
-						   alert("Credentials correct. Logging you in")
-						   $window.location="/todos";
-					   } else {
-							alert("Wrong email or pass");
-					   }
-				   })
-	}
+app.controller("SignInController",["$scope","$window","Login", function ($scope,$window,Login){
+// redirects to todos when landed on that page, due to the fact it will only be loaded(granted access) if credentials are correct
+	var logging = function () {
+		alert("Credentials correct. Logging you in")
+		$window.location="/todos";
+	};
+	logging();
 }])
 
 app.controller("InfoController",["$scope","$http","$window","$resource","Account", function ($scope,$http,$window,$resource,Account){

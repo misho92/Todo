@@ -2,8 +2,7 @@ from flask import request, jsonify
 import sqlite3
 import flask.views
 import json
-from werkzeug.security import generate_password_hash, \
-     check_password_hash
+from werkzeug.security import generate_password_hash
 
 userId = 0
 
@@ -102,27 +101,10 @@ class account(flask.views.MethodView):
     
 class signin(flask.views.MethodView):
     
-    def post(self):
-        conn = sqlite3.connect("todo.sqlite")
-        c = conn.cursor()
-        args = json.loads(request.data)
-        try:
-            c.execute("SELECT COUNT(*) FROM user WHERE email = ? ", (args["email"],))
-            exists = c.fetchone()[0]
-            c.execute("SELECT password FROM user WHERE email = ? ", (args["email"],))
-            password = c.fetchone()[0]
-            c.execute("SELECT id FROM user WHERE email = ? ", (args["email"],))
-            id = c.fetchone()[0]
-            result = check_password_hash(password, args["pass"])
-        except:
-            return jsonify({ "success": False })
-        if exists == 1 and result == True:
-            global userId 
-            userId = id
-            return jsonify({ "success": True,
-                            "id": id })
-        else:
-            return jsonify({ "success": False })
+    def post(self,id):
+        global userId 
+        userId = id
+        return jsonify({ "success": True})
 
 class myinfo(flask.views.MethodView):
     
