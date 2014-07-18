@@ -1,5 +1,5 @@
 from __future__ import with_statement
-from flask import Flask, send_file, make_response,jsonify,request,redirect
+from flask import Flask, send_file, make_response,jsonify,request
 from todoView import todo,mark,account,signin,myinfo,todoPutAndDelete
 import sqlite3
 from werkzeug.security import check_password_hash
@@ -59,7 +59,12 @@ def js():
 def css():
     return send_file("static/styles.css")
 
+@app.route("/signout")
+def logout():
+    return send_file("signout.html")
+
 @app.route("/")
+@auth.login_required
 def index():
     return send_file("index.html")
 

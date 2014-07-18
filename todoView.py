@@ -94,8 +94,9 @@ class account(flask.views.MethodView):
                                                                                                       args["lastName"],args["company"],password))
             conn.commit()
             c.execute("SELECT id FROM user WHERE email = ?",(args["email"],))
-            return jsonify({ "success": True,
-                            "id": c.fetchone()[0] })
+            global userId
+            userId = c.fetchone()[0]
+            return jsonify({ "success": True })
         else: 
             return jsonify({ "success": False })
     
@@ -104,7 +105,7 @@ class signin(flask.views.MethodView):
     def post(self,id):
         global userId 
         userId = id
-        return jsonify({ "success": True})
+
 
 class myinfo(flask.views.MethodView):
     
@@ -114,8 +115,7 @@ class myinfo(flask.views.MethodView):
         users = c.execute("SELECT id,first_name,last_name,company FROM user WHERE id = ?",(userId,))
         ids = [dict(id=str(user[0]),first_name=str(user[1]),last_name=str(user[2]),company=str(user[3])) for user in users.fetchall()]
         return jsonify({ "success": True,
-                        "users": ids
-                        })
+                        "users": ids })
         
     def put(self):
         conn = sqlite3.connect("todo.sqlite")

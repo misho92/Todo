@@ -24,13 +24,6 @@ var app = angular.module("todo",["ngRoute","ngResource"])
         .otherwise({ redirectTo: "/" });
 }])
 
-app.factory("Login", ["$resource", function($resource) {
-   return $resource("/signin", null,
-       {
-           "signin": { method: "POST" }
-       });
-    }]);
-
 app.factory("Account", ["$resource", function($resource) {
 	   return $resource("/myaccount", null,{
 		   "saveData": {method: "PUT"}
@@ -97,16 +90,16 @@ app.factory("SaveTodo", ["$resource", function($resource) {
 	   });
 	}]);
 
-app.controller("SignInController",["$scope","$window","Login", function ($scope,$window,Login){
-// redirects to todos when landed on that page, due to the fact it will only be loaded(granted access) if credentials are correct
-	var logging = function () {
+app.controller("SignInController",["$scope","$window", function ($scope,$window){
+// redirects to todos when landed on that page, due to the fact one would only land here(granted access) if credentials are correct
+	var signIn = function () {
 		alert("Credentials correct. Logging you in")
 		$window.location="/todos";
 	};
-	logging();
+	signIn();
 }])
 
-app.controller("InfoController",["$scope","$http","$window","$resource","Account", function ($scope,$http,$window,$resource,Account){
+app.controller("InfoController",["$scope","$window","Account", function ($scope,$window,Account){
 	//get request for displaying user specific information		
 	Account.get(function(items){
 		$scope.first_name = items.users[0]["first_name"];
@@ -134,7 +127,7 @@ app.controller("InfoController",["$scope","$http","$window","$resource","Account
 	}
 }])
 
-app.controller("RegistrationController",["$scope","$http","$window","$resource","Register", function ($scope,$http,$window,$resource,Register){
+app.controller("RegistrationController",["$scope","$window","Register", function ($scope,$window,Register){
 	$scope.yourEmail = "abv@abv.bg";
 	$scope.yourPass = "test";
 	$scope.yourCompany = "test";
@@ -226,7 +219,7 @@ app.controller("RegistrationController",["$scope","$http","$window","$resource",
     
 }])
 
-app.controller("TodosController",["$scope","$window","$http","$resource","Todos","TodosDelete","MarkAllTodos","UnmarkAllTodos","MarkSingleTodo","UnmarkSingleTodo","DeleteAllTodos","DeleteCompleted","SaveTodo", function ($scope,$window,$http,$resource,Todos,TodosDelete,MarkAllTodos,UnmarkAllTodos,MarkSingleTodo,UnmarkSingleTodo,DeleteAllTodos,DeleteCompleted,SaveTodo) {
+app.controller("TodosController",["$scope","$window","Todos","TodosDelete","MarkAllTodos","UnmarkAllTodos","MarkSingleTodo","UnmarkSingleTodo","DeleteAllTodos","DeleteCompleted","SaveTodo", function ($scope,$window,Todos,TodosDelete,MarkAllTodos,UnmarkAllTodos,MarkSingleTodo,UnmarkSingleTodo,DeleteAllTodos,DeleteCompleted,SaveTodo) {
 	$scope.items = [];
 	Todos.get(function(items){
 		$scope.items = items.todoList;
@@ -289,7 +282,7 @@ app.controller("TodosController",["$scope","$window","$http","$resource","Todos"
 
 // sign out user
 	$scope.signout = function(){  
-		$window.location.href = "/";  
+		$window.location.href = "/signout";  
 	};
 
 // redirect to my info
