@@ -19,6 +19,12 @@
 				<input ng-model = "last_name" type="text">
 				<label> Company </label>
 				<input ng-model = "company" type="text">
+				<label> Email </label>
+				<input readonly ng-model = "email" type="text">
+				<label> Current plan </label>
+				<input readonly ng-model = "plan" type="text">
+				<p></p>
+				<button class="btn-primary" ng-click="changePlan()">Change Plan</button>
 				<p></p>
 				<button class="btn-primary" ng-click="save()">Save change</button>
 				<p></p>

@@ -3,6 +3,9 @@ import sqlite3
 import flask.views
 import json
 from werkzeug.security import generate_password_hash
+from time import gmtime, strftime
+import datetime
+import time
 
 userId = 0
 
@@ -89,9 +92,10 @@ class account(flask.views.MethodView):
         email = c.fetchall()
         if email == []:
             # pass stored as salt hash not just plain text
-            password = generate_password_hash(args["pass"]);
-            c.execute("INSERT INTO user (email,first_name,last_name,company,password) VALUES(?,?,?,?,?)",(args["email"],args["firstName"],
-                                                                                                      args["lastName"],args["company"],password))
+            password = generate_password_hash(args["pass"])
+            date = strftime("%Y-%m-%d", gmtime())
+            c.execute("INSERT INTO user (email,first_name,last_name,company,password,plan,registered) VALUES(?,?,?,?,?,?,?)",(args["email"],args["firstName"],
+                                                                                                      args["lastName"],args["company"],password,args["plan"],date))
             conn.commit()
             c.execute("SELECT id FROM user WHERE email = ?",(args["email"],))
             global userId
@@ -112,8 +116,8 @@ class myinfo(flask.views.MethodView):
     def get(self):
         conn = sqlite3.connect("todo.sqlite")
         c = conn.cursor()
-        users = c.execute("SELECT id,first_name,last_name,company FROM user WHERE id = ?",(userId,))
-        ids = [dict(id=str(user[0]),first_name=str(user[1]),last_name=str(user[2]),company=str(user[3])) for user in users.fetchall()]
+        users = c.execute("SELECT id,first_name,last_name,company,plan,email FROM user WHERE id = ?",(userId,))
+        ids = [dict(id=str(user[0]),first_name=str(user[1]),last_name=str(user[2]),company=str(user[3]),plan=str(user[4]),email=str(user[5])) for user in users.fetchall()]
         return jsonify({ "success": True,
                         "users": ids })
         
@@ -121,7 +125,27 @@ class myinfo(flask.views.MethodView):
         conn = sqlite3.connect("todo.sqlite")
         c = conn.cursor()
         args = json.loads(request.data)
-        c.execute("UPDATE user SET first_name = ? , last_name = ? , company = ? WHERE id = ?",(args["first_name"],args["last_name"],
+        # if function is invoked for changing plan option
+        if args["plan"] != None:
+            if args["date"] != None:
+                c.execute("SELECT registered FROM user WHERE id = ?",(userId,))
+                registered = c.fetchone()[0]
+                registered = time.mktime(datetime.datetime.strptime(registered, "%Y-%m-%d").timetuple())
+                changePlanRequestDate = time.mktime(datetime.datetime.strptime(args["date"], "%Y-%m-%d").timetuple())
+                # 604800 is the number of seconds in a week, if the request is valid ( within 7 days of the registration let the downgrade proceed
+                if changePlanRequestDate - 604800 <= registered:
+                    c.execute("UPDATE user SET plan = ? WHERE id = ?", (args["plan"],userId))
+                    conn.commit()
+                    return jsonify({ "success": True })
+                else:
+                    return jsonify({ "success": False })
+            else:
+                c.execute("UPDATE user SET plan = 'L' WHERE id = ?", (userId,))
+                conn.commit()
+                return jsonify({ "success": True })
+        # if function is invoked to save edited info fields
+        else:
+            c.execute("UPDATE user SET first_name = ? , last_name = ? , company = ? WHERE id = ?",(args["first_name"],args["last_name"],
                                                                                                    args["company"],userId))
-        conn.commit()
-        return jsonify({ "success": True })
+            conn.commit()
+            return jsonify({ "success": True })

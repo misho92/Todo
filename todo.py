@@ -20,7 +20,6 @@ app.add_url_rule("/myaccount", view_func=myinfo.as_view("myinfo"), methods=["GET
 
 # make_response(open("index.html").read()) for no caching
 
-
 auth = HTTPBasicAuth()
 
 @auth.get_password

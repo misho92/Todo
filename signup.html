@@ -18,6 +18,11 @@
 			<input id="company" required type="text" ng-model="yourCompany" placeholder="Enter your company">
 			<input id="fName" required type="text" ng-model="yourFName" placeholder="Enter your first name">
 			<input id="lName" required type="text" ng-model="yourLName" placeholder="Enter your last name">
+			<p> Choose your plan </p>
+			<div>
+				<i class="icon icon-info-sign" title="S - Small plan is just for 10 todo items, where as L - Large gives you unlimited number of todos. You can downgrade from L to S within the first 7 days of registration"></i>
+				<select ng-model="plan" required ng-change="Plan(plan)" ng-options="plan for plan in plans"></select>
+			</div>
 			<p> Payment Information </p>
 			<p></p>
 			<div>

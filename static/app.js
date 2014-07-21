@@ -26,7 +26,8 @@ var app = angular.module("todo",["ngRoute","ngResource"])
 
 app.factory("Account", ["$resource", function($resource) {
 	   return $resource("/myaccount", null,{
-		   "saveData": {method: "PUT"}
+		   "saveData": {method: "PUT"},
+		   "changePlan": {method: "PUT"}
 	   });
 	}]);
 
@@ -105,13 +106,16 @@ app.controller("InfoController",["$scope","$window","Account", function ($scope,
 		$scope.first_name = items.users[0]["first_name"];
 		$scope.last_name = items.users[0]["last_name"];
 		$scope.company = items.users[0]["company"];
+		$scope.plan = items.users[0]["plan"];
+		$scope.email = items.users[0]["email"];
 	})
 
 //save function to save the edited fields of my info section
 	$scope.save = function(){
 		Account.saveData({first_name: $scope.first_name,
 				   last_name: $scope.last_name,
-			       company: $scope.company},function(items){
+			       company: $scope.company,
+			       plan: null},function(items){
 					   if(items.success){
 						   alert("Information saved");
 					   } else {
@@ -120,12 +124,37 @@ app.controller("InfoController",["$scope","$window","Account", function ($scope,
 				   }
 		)
 	}
+	
+	$scope.changePlan = function(){
+		var date = new Date();
+		formattedDate = date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate();
+		if($scope.plan == "L"){
+			Account.changePlan({plan: "S",date: formattedDate},function(result){
+				if(result.success){
+					   alert("Plan successfully downgraded to S");
+					   $scope.plan = "S";
+				   } else {
+					   alert("7 days from registration have passed, thus you are no longer allowed to downgrade your plan");
+				   }
+			})
+		}
+		else{
+			Account.changePlan({plan: "L",date: null},function(result){
+				if(result.success){
+					   alert("Plan successfully upgraded to L");
+					   $scope.plan = "L";
+				   } else {
+					   alert("Error occurred in upgrading your plan");
+				   }
+			})	
+		}
+	}
 
 //go back button to todos list
 	$scope.todos = function(){
 		$window.location="/todos";
 	}
-}])
+}]);
 
 app.controller("RegistrationController",["$scope","$window","Register", function ($scope,$window,Register){
 	$scope.yourEmail = "abv@abv.bg";
@@ -150,7 +179,8 @@ app.controller("RegistrationController",["$scope","$window","Register", function
    					      pass: $scope.yourPass,
    					      company: $scope.yourCompany,
    					      firstName: $scope.yourFName,
-   					      lastName: $scope.yourLName},function(items){
+   					      lastName: $scope.yourLName,
+   					      plan: $scope.plan},function(items){
    					    	  if(items.success){
    					    		  var fakePSP = ["CreditCard:Paymill","Debit:Paymill"];
    					    		  var bearer = "";
@@ -212,6 +242,13 @@ app.controller("RegistrationController",["$scope","$window","Register", function
     $scope.years = [];
     for(var i = 0; i < 5; i++){
     	$scope.years[i] = new Date().getFullYear() + i;
+    }
+    $scope.plans = ["S","L"];
+    $scope.plan = {
+    		plan: ""
+    };
+    $scope.Plan = function(plan){
+    	$scope.plan = plan;
     }
     $scope.goBack = function(){
     	$window.location="/signin";
