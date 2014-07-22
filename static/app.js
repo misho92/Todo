@@ -45,7 +45,8 @@ app.factory("Todos", ["$resource", function($resource) {
 
 app.factory("TodosDelete", ["$resource", function($resource) {
 	   return $resource("/todo/:task", null,{
-		   "deleteTodo": {method: "DELETE"}
+		   "deleteTodo": {method: "DELETE"},
+		   "editTodo": {method: "PUT"}
 	   });
 	}]);
 
@@ -82,12 +83,6 @@ app.factory("DeleteAllTodos", ["$resource", function($resource) {
 app.factory("DeleteCompleted", ["$resource", function($resource) {
 	   return $resource("/todo/allCompleted", null,{
 		   "deleteAllCompletedTodos": {method: "PUT"}
-	   });
-	}]);
-
-app.factory("SaveTodo", ["$resource", function($resource) {
-	   return $resource("/todo/:task", null,{
-		   "editTodo": {method: "PUT"}
 	   });
 	}]);
 
@@ -256,7 +251,7 @@ app.controller("RegistrationController",["$scope","$window","Register", function
     
 }])
 
-app.controller("TodosController",["$scope","$window","Todos","TodosDelete","MarkAllTodos","UnmarkAllTodos","MarkSingleTodo","UnmarkSingleTodo","DeleteAllTodos","DeleteCompleted","SaveTodo", function ($scope,$window,Todos,TodosDelete,MarkAllTodos,UnmarkAllTodos,MarkSingleTodo,UnmarkSingleTodo,DeleteAllTodos,DeleteCompleted,SaveTodo) {
+app.controller("TodosController",["$scope","$window","Todos","TodosDelete","MarkAllTodos","UnmarkAllTodos","MarkSingleTodo","UnmarkSingleTodo","DeleteAllTodos","DeleteCompleted", function ($scope,$window,Todos,TodosDelete,MarkAllTodos,UnmarkAllTodos,MarkSingleTodo,UnmarkSingleTodo,DeleteAllTodos,DeleteCompleted) {
 	$scope.items = [];
 	var plan = "";
 	Todos.get(function(items){
@@ -440,7 +435,7 @@ app.controller("TodosController",["$scope","$window","Todos","TodosDelete","Mark
 //save an edited todo task
 	$scope.saveTodo = function(newTask,task){
 		if(newTask){
-	    SaveTodo.editTodo({task:task},{newTask: newTask},function(items){
+	    TodosDelete.editTodo({task:task},{newTask: newTask},function(items){
 						   if(items.success){
 						   } else {
 							   alert("Editting of task failed");
