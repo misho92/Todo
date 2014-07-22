@@ -131,11 +131,11 @@ app.controller("InfoController",["$scope","$window","Account", function ($scope,
 		if($scope.plan == "L"){
 			Account.changePlan({plan: "S",date: formattedDate},function(result){
 				if(result.success){
-					   alert("Plan successfully downgraded to S");
-					   $scope.plan = "S";
-				   } else {
-					   alert("7 days from registration have passed, thus you are no longer allowed to downgrade your plan");
-				   }
+					alert("Plan successfully downgraded to S. The maximum capacity for plan S is 10 todo items only. Therefore only the first 10 would stay at the system and all the rest would be deleted");
+					$scope.plan = "S";
+				} else {
+					alert("7 days from registration have passed, thus you are no longer allowed to downgrade your plan");
+				}
 			})
 		}
 		else{
@@ -258,9 +258,11 @@ app.controller("RegistrationController",["$scope","$window","Register", function
 
 app.controller("TodosController",["$scope","$window","Todos","TodosDelete","MarkAllTodos","UnmarkAllTodos","MarkSingleTodo","UnmarkSingleTodo","DeleteAllTodos","DeleteCompleted","SaveTodo", function ($scope,$window,Todos,TodosDelete,MarkAllTodos,UnmarkAllTodos,MarkSingleTodo,UnmarkSingleTodo,DeleteAllTodos,DeleteCompleted,SaveTodo) {
 	$scope.items = [];
+	var plan = "";
 	Todos.get(function(items){
 		$scope.items = items.todoList;
-		$scope.username = items.username; 
+		$scope.username = items.username;
+		plan = items.plan;
 		angular.forEach($scope.items, function(item) {
 	  		if(item.done == 1) item.done = true;
 		});
@@ -279,20 +281,25 @@ app.controller("TodosController",["$scope","$window","Todos","TodosDelete","Mark
 			return;
 		}
 		if($scope.todoText){
-	       Todos.insert({task: $scope.todoText},function(items){
-						 if(items.success){
-						 } else {
-							 alert("Adding of item failed");
+			if(plan == "S" && $scope.items.length == 10){
+				alert("You reached the maximum storage for your plan S. You can switch to plan L for unlimited items");
+			}
+			else{
+		        Todos.insert({task: $scope.todoText},function(items){
+							 if(items.success){
+							 } else {
+								 alert("Adding of item failed");
+							 }
 						 }
-					 }
-			)
-			Todos.get(function(items){
-				$scope.items = items.todoList;
-				angular.forEach($scope.items, function(item) {
-					if(item.done == 1) item.done = true;
-		    	});
-				$scope.mark = false;
-		    })
+				)
+				Todos.get(function(items){
+					$scope.items = items.todoList;
+					angular.forEach($scope.items, function(item) {
+						if(item.done == 1) item.done = true;
+			    	});
+					$scope.mark = false;
+			    })
+			}
 		}
 		else{
 			alert("Inserting empty item is not allowed");

@@ -19,10 +19,13 @@ class todo(flask.views.MethodView):
         cur = c.execute("SELECT * FROM task WHERE user_id = ?", (userId,))
         entries = [dict(id=str(row[0]), title=str(row[1]), done=str(row[2]), user_id=str(row[3])) for row in cur.fetchall()]
         c.execute("SELECT first_name FROM user WHERE id = ?", (userId,))
+        username = c.fetchone()[0]
+        c.execute("SELECT plan FROM user WHERE id = ?", (userId,))
         return jsonify({
             "success": True,
             "todoList": [{ "task": item["title"], "id": item["id"], "done": item["done"], "user_id": item["user_id"] } for item in entries],
-            "username": c.fetchone()[0]
+            "username": username,
+            "plan": c.fetchone()[0]
         })
 
 # post request        
@@ -135,6 +138,8 @@ class myinfo(flask.views.MethodView):
                 # 604800 is the number of seconds in a week, if the request is valid ( within 7 days of the registration let the downgrade proceed
                 if changePlanRequestDate - 604800 <= registered:
                     c.execute("UPDATE user SET plan = ? WHERE id = ?", (args["plan"],userId))
+                    # delete all the todo items except the top 10 as this is the maximum that plan S offers
+                    c.execute("DELETE FROM task WHERE id NOT IN(SELECT id FROM task WHERE user_id = ? ORDER BY id LIMIT 10)", (userId,))
                     conn.commit()
                     return jsonify({ "success": True })
                 else:

@@ -20,8 +20,10 @@
 			<input id="lName" required type="text" ng-model="yourLName" placeholder="Enter your last name">
 			<p> Choose your plan </p>
 			<div>
-				<i class="icon icon-info-sign" title="S - Small plan is just for 10 todo items, where as L - Large gives you unlimited number of todos. You can downgrade from L to S within the first 7 days of registration"></i>
-				<select ng-model="plan" required ng-change="Plan(plan)" ng-options="plan for plan in plans"></select>
+				<i class="icon icon-info-sign" title="S - Small plan is just for 10 todo items, where as L - Large gives you unlimited number of todos. You can downgrade from L to S within the first 7 days of registration, where as upgrade is possible at any time"></i>
+				<select ng-model="plan" ng-change="Plan(plan)" ng-options="plan for plan in plans" required="required">
+				<option class="" value=""></option>
+				</select>
 			</div>
 			<p> Payment Information </p>
 			<p></p>
@@ -29,7 +31,9 @@
 			    <div>
 			        Select Payment Method:
 			        <p></p>
-			        <select ng-model="paymentMethod" ng-change="Payment(paymentMethod)" ng-options="payment for payment in payments"></select>
+			        <select ng-model="paymentMethod" ng-change="Payment(paymentMethod)" ng-options="payment for payment in payments" required="required">
+			        <option class="" value=""></option>
+			        </select>
 			    </div>
 			</div>
 			<p></p>
@@ -37,9 +41,13 @@
 			<input ng-show="credit" id="number" maxlength="16" type="text" ng-model="yourCardNumber" placeholder="Enter your card number">
 			<input ng-show="credit" id="cvc" type="text" ng-model="yourCVC" placeholder="Enter your CVC">
 			<p ng-show="credit"> Valid until</p>
-			<select ng-show="credit" ng-model="month" ng-options="month for month in months"></select>
+			<select ng-show="credit" ng-model="month" ng-options="month for month in months" required="required">
+			<option class="" value="">
+			</select>
 			<p></p>
-			<select ng-show="credit" ng-model="year" ng-options="year for year in years"></select>
+			<select ng-show="credit" ng-model="year" ng-options="year for year in years" required="required">
+			<option class="" value="">
+			</select>
 			<input ng-if="credit == false" type="text" ng-model="accountOwner" placeholder="Enter the owner of account">
 			<input ng-if="credit == false" type="text" ng-model="BIC" placeholder="Enter the BIC of account">
 			<input ng-if="credit == false" type="text" ng-model="IBAN" placeholder="Enter the IBAN of account">
