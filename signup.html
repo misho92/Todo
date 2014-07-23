@@ -32,7 +32,7 @@
 			        Select Payment Method:
 			        <p></p>
 			        <select ng-model="paymentMethod" ng-change="Payment(paymentMethod)" ng-options="payment for payment in payments" required="required">
-			        <option class="" value=""></option>
+			        	<option class="" value=""></option>
 			        </select>
 			    </div>
 			</div>
@@ -42,11 +42,11 @@
 			<input ng-show="credit" id="cvc" type="text" ng-model="yourCVC" placeholder="Enter your CVC">
 			<p ng-show="credit"> Valid until</p>
 			<select ng-show="credit" ng-model="month" ng-options="month for month in months" required="required">
-			<option class="" value="">
+				<option class="" value="">
 			</select>
 			<p></p>
-			<select ng-show="credit" ng-model="year" ng-options="year for year in years" required="required">
-			<option class="" value="">
+			<select ng-show="credit" ng-model="year" ng-change="validity(month,year)" ng-options="year for year in years" required="required">
+				<option class="" value="">
 			</select>
 			<input ng-if="credit == false" type="text" ng-model="accountOwner" placeholder="Enter the owner of account">
 			<input ng-if="credit == false" type="text" ng-model="BIC" placeholder="Enter the BIC of account">

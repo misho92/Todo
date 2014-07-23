@@ -36,3 +36,18 @@
 #signout{
 		position: absolute; right: 10px;
 	}
+	
+#todoTitle{
+		line-height: 140px
+	}
+	
+#paymentData {
+    	text-align: center;
+    	width: 200px;
+		position: relative;
+		top: 100;
+		bottom: 0;
+		left: 0;
+		right: 0;
+		margin: auto;
+	}

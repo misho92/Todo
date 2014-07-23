@@ -97,8 +97,9 @@ class account(flask.views.MethodView):
             # pass stored as salt hash not just plain text
             password = generate_password_hash(args["pass"])
             date = strftime("%Y-%m-%d", gmtime())
-            c.execute("INSERT INTO user (email,first_name,last_name,company,password,plan,registered) VALUES(?,?,?,?,?,?,?)",(args["email"],args["firstName"],
-                                                                                                      args["lastName"],args["company"],password,args["plan"],date))
+            c.execute("INSERT INTO user (email,first_name,last_name,company,password,plan,registered,payment,name_on_card,card_number,CVC," 
+            "valid_until) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)",(args["email"],args["firstName"],args["lastName"],args["company"],password,args["plan"],
+                                                        date,args["payment"],args["nameOnCard"],args["cardNumber"],args["cvc"],args["validUntil"]))
             conn.commit()
             c.execute("SELECT id FROM user WHERE email = ?",(args["email"],))
             global userId
@@ -120,7 +121,8 @@ class myinfo(flask.views.MethodView):
         conn = sqlite3.connect("todo.sqlite")
         c = conn.cursor()
         users = c.execute("SELECT id,first_name,last_name,company,plan,email FROM user WHERE id = ?",(userId,))
-        ids = [dict(id=str(user[0]),first_name=str(user[1]),last_name=str(user[2]),company=str(user[3]),plan=str(user[4]),email=str(user[5])) for user in users.fetchall()]
+        ids = [dict(id=str(user[0]),first_name=str(user[1]),last_name=str(user[2]),company=str(user[3]),plan=str(user[4]),email=str(user[5])) 
+               for user in users.fetchall()]
         return jsonify({ "success": True,
                         "users": ids })
         
@@ -152,3 +154,18 @@ class myinfo(flask.views.MethodView):
                                                                                                    args["company"],userId))
             conn.commit()
             return jsonify({ "success": True })
+        
+class myPortal (flask.views.MethodView):
+    
+    def get(self):
+        conn = sqlite3.connect("todo.sqlite")
+        c = conn.cursor()
+        cur = c.execute("SELECT payment,name_on_card,card_number,CVC,valid_until FROM user WHERE id = ?", (userId,))
+        entries = [dict(payment=str(row[0]), nameOnCard=str(row[1]), cardNumber=str(row[2]), cvc=str(row[3]), validUntil=str(row[4])) 
+                   for row in cur.fetchall()]
+        return jsonify({
+            "success": True,
+            "paymentData": [{ "payment": item["payment"], "nameOnCard": item["nameOnCard"], "cardNumber": item["cardNumber"], "cvc": item["cvc"], 
+                             "validUntil": item["validUntil"] } for item in entries],
+            "user": userId
+        })

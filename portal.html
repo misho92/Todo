@@ -9,5 +9,56 @@
 		<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.0-beta.14/angular-resource.min.js"></script>
 	</head>
 	<body>
+		<h1 align="center"> My Portal </h1>
+		<div id="paymentData" ng-controller="PortalController">
+				<p> My Payment Data </p>
+				<label> Payment Method </label>
+				<input ng-hide="editData" readonly ng-model ="paymentMethod" type="text">
+				<div ng-show="editData" class="popup">
+				    <select required="required" ng-model="editedPaymentMethod" ng-change="Payment(paymentMethod)" ng-options="payment for payment in payments" required="required">
+			        <option class="" value=""></option>
+			        </select>
+		    	</div>
+				<label> Name on card </label>
+				<input ng-hide="editData" readonly ng-model = "nameOnCard" type="text">
+				<div ng-show="editData" class="popup">
+				    <input required ng-model="editedNameOnCard" type="text" placeholder="{{nameOnCard}}"/>
+			        <option class="" value=""></option>
+			        </select>
+		    	</div>
+				<label> Card Number </label>
+				<input ng-hide="editData" readonly ng-model = "cardNumber" type="text">
+				<div ng-show="editData" class="popup">
+				    <input required maxlength="16" ng-model="editedCardNumber" type="text" placeholder="{{cardNumber}}"/>
+			        <option class="" value=""></option>
+			        </select>
+		    	</div>
+				<label> CVC </label>
+				<input ng-hide="editData" readonly ng-model = "cvc" type="text">
+				<div ng-show="editData" class="popup">
+				    <input required ng-model="editedCVC" type="text" placeholder="{{cvc}}"/>
+			        <option class="" value=""></option>
+			        </select>
+		    	</div>
+				<label> Valid Until </label>
+				<input ng-hide="editData" readonly ng-model = "validUntil" type="text">
+				<div ng-show="editData" class="popup">
+				    <select ng-model="month" ng-options="month for month in months" required="required">
+						<option class="" value="">
+					</select>
+					<p></p>
+					<select ng-model="year" ng-change="validity(month,year)" ng-options="year for year in years" required="required">
+						<option class="" value="">
+					</select>
+		    	</div>
+				<p></p>
+				<button class="btn-primary" ng-click="editData = true"> Edit Data</button>
+				<p></p>
+				<div ng-show="editData" class="popup">
+				    <button class="btn-primary" ng-click="saveData(editedNameOnCard,editedCardNumber,editedCVC)"> Save Changes</button>
+		    	</div>
+				<p></p>
+				<button class="btn-primary" ng-click="todos()">Back to todo</button>
+		</div>
 	</body>
 </html>

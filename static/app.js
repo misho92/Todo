@@ -21,6 +21,10 @@ var app = angular.module("todo",["ngRoute","ngResource"])
             templateUrl: "/myaccount.html",
             controller: "InfoController"
         })
+        .when("/portal", {
+            templateUrl: "/portal.html",
+            controller: "PortalController"
+        })
         .otherwise({ redirectTo: "/" });
 }])
 
@@ -29,6 +33,10 @@ app.factory("Account", ["$resource", function($resource) {
 		   "saveData": {method: "PUT"},
 		   "changePlan": {method: "PUT"}
 	   });
+	}]);
+
+app.factory("Portal", ["$resource", function($resource) {
+	   return $resource("/myportal", null,{});
 	}]);
 
 app.factory("Register", ["$resource", function($resource) {
@@ -158,6 +166,48 @@ app.controller("InfoController",["$scope","$window","Account","Todos", function 
 	}
 }]);
 
+app.controller("PortalController",["$scope","$window","Portal", function ($scope,$window,Portal){
+	Portal.get(function(data){
+		$scope.paymentMethod = data.paymentData[0]["payment"];
+		$scope.nameOnCard = data.paymentData[0]["nameOnCard"];
+		$scope.cardNumber = data.paymentData[0]["cardNumber"];
+		$scope.cvc = data.paymentData[0]["cvc"];
+		$scope.validUntil = data.paymentData[0]["validUntil"];
+	})
+	
+	$scope.payments = ["Credit Card","Direct Debit"];
+	$scope.Payment = function(payment) {
+    	$scope.editedPaymentMethod = payment;
+    	if(payment == "Credit Card") $scope.credit = true;
+    	else $scope.credit = false;
+    }
+    
+  //auto generated list of year of expiry so that years in past do not turn up
+    $scope.months = [1,2,3,4,5,6,7,8,9,10,11,12];
+    $scope.years = [];
+    for(var i = 0; i < 5; i++){
+    	$scope.years[i] = new Date().getFullYear() + i;
+    }
+    $scope.validity = function(month,year){
+    	$scope.month = month;
+    	$scope.year = year;
+    }
+    
+    $scope.saveData = function(nameOnCard,cardNumber,cvc){
+    	console.log(nameOnCard);
+    	console.log(cardNumber);
+    	console.log(cvc);
+    	console.log($scope.month);
+    	console.log($scope.year);
+    	console.log($scope.editedPaymentMethod);
+    }
+	
+//go back button to todos list
+	$scope.todos = function(){
+		$window.location="/todos";
+	}
+}]);
+
 app.controller("RegistrationController",["$scope","$window","Register", function ($scope,$window,Register){
 	$scope.yourEmail = "abv@abv.bg";
 	$scope.yourPass = "test";
@@ -182,7 +232,12 @@ app.controller("RegistrationController",["$scope","$window","Register", function
    					      company: $scope.yourCompany,
    					      firstName: $scope.yourFName,
    					      lastName: $scope.yourLName,
-   					      plan: $scope.plan},function(items){
+   					      plan: $scope.plan,
+   					      payment: $scope.paymentMethod,
+   					      nameOnCard: $scope.yourNameOnCard,
+   					      cardNumber: $scope.yourCardNumber,
+   					      cvc: $scope.yourCVC,
+   					      validUntil: $scope.month + "/" + $scope.year},function(items){
    					    	  if(items.success){
    					    		  var fakePSP = ["CreditCard:Paymill","Debit:Paymill"];
    					    		  var bearer = "";
@@ -231,7 +286,7 @@ app.controller("RegistrationController",["$scope","$window","Register", function
 	//depending of payment method show up the respective views(fields)
 	$scope.payments = ["Credit Card","Direct Debit"];
 	$scope.Payment = function(payment) {
-    	$scope.selectedItem = payment;
+    	$scope.paymentMethod = payment;
     	if(payment == "Credit Card") $scope.credit = true;
     	else $scope.credit = false;
     }
@@ -245,6 +300,11 @@ app.controller("RegistrationController",["$scope","$window","Register", function
     for(var i = 0; i < 5; i++){
     	$scope.years[i] = new Date().getFullYear() + i;
     }
+    $scope.validity = function(month,year){
+    	$scope.month = month;
+    	$scope.year = year;
+    }
+    
     $scope.plans = ["S","L"];
     $scope.plan = {
     		plan: ""
@@ -330,11 +390,6 @@ app.controller("TodosController",["$scope","$window","Todos","TodosDelete","Mark
 	$scope.signout = function(){  
 		$window.location.href = "/signout";  
 	};
-
-// redirect to my info
-	$scope.myaccount = function(){
-		$window.location="/myinfo";
-	}
 
 	$scope.markAll = function(){
 		if($scope.items.length != 0){
