@@ -95,7 +95,7 @@ app.controller("SignInController",["$scope","$window", function ($scope,$window)
 	signIn();
 }])
 
-app.controller("InfoController",["$scope","$window","Account", function ($scope,$window,Account){
+app.controller("InfoController",["$scope","$window","Account","Todos", function ($scope,$window,Account,Todos){
 	//get request for displaying user specific information		
 	Account.get(function(items){
 		$scope.first_name = items.users[0]["first_name"];
@@ -124,22 +124,29 @@ app.controller("InfoController",["$scope","$window","Account", function ($scope,
 		var date = new Date();
 		formattedDate = date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate();
 		if($scope.plan == "L"){
-			Account.changePlan({plan: "S",date: formattedDate},function(result){
-				if(result.success){
-					alert("Plan successfully downgraded to S. The maximum capacity for plan S is 10 todo items only. Therefore only the first 10 would stay at the system and all the rest would be deleted");
-					$scope.plan = "S";
-				} else {
-					alert("7 days from registration have passed, thus you are no longer allowed to downgrade your plan");
+			Todos.get(function(items){
+				if(items.todoList.length <= 10){
+					Account.changePlan({plan: "S",date: formattedDate},function(result){
+						if(result.success){
+							alert("Plan successfully downgraded to S. The maximum capacity for plan S is 10 todo items only.");
+							$scope.plan = "S";
+						} else {
+							alert("7 days from registration have passed, thus you are no longer allowed to downgrade your plan.");
+						}
+					})
+				}
+				else{
+					alert("Downgrade not possible, items over the maximum of 10 for plan S. Please reduce the numbers to 10 and then try again to downgrade.")
 				}
 			})
 		}
 		else{
 			Account.changePlan({plan: "L",date: null},function(result){
 				if(result.success){
-					   alert("Plan successfully upgraded to L");
+					   alert("Plan successfully upgraded to L. You can have unlimited number of items.");
 					   $scope.plan = "L";
 				   } else {
-					   alert("Error occurred in upgrading your plan");
+					   alert("Error occurred in upgrading your plan.");
 				   }
 			})	
 		}

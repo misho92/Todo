@@ -138,8 +138,6 @@ class myinfo(flask.views.MethodView):
                 # 604800 is the number of seconds in a week, if the request is valid ( within 7 days of the registration let the downgrade proceed
                 if changePlanRequestDate - 604800 <= registered:
                     c.execute("UPDATE user SET plan = ? WHERE id = ?", (args["plan"],userId))
-                    # delete all the todo items except the top 10 as this is the maximum that plan S offers
-                    c.execute("DELETE FROM task WHERE id NOT IN(SELECT id FROM task WHERE user_id = ? ORDER BY id LIMIT 10)", (userId,))
                     conn.commit()
                     return jsonify({ "success": True })
                 else:
