@@ -97,10 +97,16 @@ class account(flask.views.MethodView):
             # pass stored as salt hash not just plain text
             password = generate_password_hash(args["pass"])
             date = strftime("%Y-%m-%d", gmtime())
-            c.execute("INSERT INTO user (email,first_name,last_name,company,password,plan,registered,payment,name_on_card,card_number,CVC," 
-            "valid_until) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)",(args["email"],args["firstName"],args["lastName"],args["company"],password,args["plan"],
-                                                        date,args["payment"],args["nameOnCard"],args["cardNumber"],args["cvc"],args["validUntil"]))
-            conn.commit()
+            if args["payment"] == "Credit Card":
+                c.execute("INSERT INTO user (email,first_name,last_name,company,password,plan,registered,payment,name_on_card,card_number,CVC," 
+                "valid_until) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)",(args["email"],args["firstName"],args["lastName"],args["company"],password,args["plan"],
+                                                            date,args["payment"],args["nameOnCard"],args["cardNumber"],args["cvc"],args["validUntil"]))
+                conn.commit()
+            else:
+                c.execute("INSERT INTO user (email,first_name,last_name,company,password,plan,registered,payment,owner_of_account,BIC,IBAN," 
+                "bank_account_number) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)",(args["email"],args["firstName"],args["lastName"],args["company"],password,
+                                     args["plan"],date,args["payment"],args["ownerOfAccount"],args["BIC"],args["IBAN"],args["bankAccountNumber"]))
+                conn.commit()
             c.execute("SELECT id FROM user WHERE email = ?",(args["email"],))
             global userId
             userId = c.fetchone()[0]
@@ -160,12 +166,31 @@ class myPortal (flask.views.MethodView):
     def get(self):
         conn = sqlite3.connect("todo.sqlite")
         c = conn.cursor()
-        cur = c.execute("SELECT payment,name_on_card,card_number,CVC,valid_until FROM user WHERE id = ?", (userId,))
-        entries = [dict(payment=str(row[0]), nameOnCard=str(row[1]), cardNumber=str(row[2]), cvc=str(row[3]), validUntil=str(row[4])) 
-                   for row in cur.fetchall()]
+        cur = c.execute("SELECT payment,name_on_card,card_number,CVC,valid_until,owner_of_account,BIC,IBAN,bank_account_number FROM user "
+        "WHERE id = ?" , (userId,))
+        entries = [dict(payment=str(row[0]), nameOnCard=str(row[1]), cardNumber=str(row[2]), cvc=str(row[3]), validUntil=str(row[4]),
+                        owner=str(row[5]),BIC=str(row[6]),IBAN=str(row[7]),bankAccountNumber=str(row[8]))for row in cur.fetchall()]
         return jsonify({
             "success": True,
             "paymentData": [{ "payment": item["payment"], "nameOnCard": item["nameOnCard"], "cardNumber": item["cardNumber"], "cvc": item["cvc"], 
-                             "validUntil": item["validUntil"] } for item in entries],
+                             "validUntil": item["validUntil"], "owner": item["owner"], "BIC": item["BIC"], "IBAN": item["IBAN"], 
+                             "bankAccountNumber": item["bankAccountNumber"] } for item in entries],
             "user": userId
         })
+        
+    def put(self):
+        conn = sqlite3.connect("todo.sqlite")
+        c = conn.cursor()
+        args = json.loads(request.data)
+        if args["payment"] == "Credit Card":
+            c.execute("UPDATE user SET payment = 'Credit Card' , name_on_card = ? , card_number = ? , CVC = ?  , valid_until = ? , "
+            "owner_of_account = '' , BIC = '' , IBAN = '' , bank_account_number = '' WHERE id = ?",(args["nameOnCard"],args["cardNumber"],
+                                                                                                    args["cvc"],args["validUntil"],userId))
+            conn.commit()
+            return jsonify({ "success": True })
+        else:
+            c.execute("UPDATE user SET payment = 'Direct Debit' , owner_of_account = ? , BIC = ? , IBAN = ? , bank_account_number = ? ," 
+            "name_on_card = '' , card_number = '' ,  CVC = '' , valid_until = ''  WHERE id = ?",(args["owner"],args["BIC"],args["IBAN"],
+                                                                                                args["bankAccountNumber"],userId))
+            conn.commit()
+            return jsonify({ "success": True })

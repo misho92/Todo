@@ -15,34 +15,34 @@
 				<label> Payment Method </label>
 				<input ng-hide="editData" readonly ng-model ="paymentMethod" type="text">
 				<div ng-show="editData" class="popup">
-				    <select required="required" ng-model="editedPaymentMethod" ng-change="Payment(paymentMethod)" ng-options="payment for payment in payments" required="required">
+				    <select required="required" ng-model="editedPaymentMethod" ng-change="Payment(editedPaymentMethod)" ng-options="payment for payment in payments" required="required">
 			        <option class="" value=""></option>
 			        </select>
 		    	</div>
-				<label> Name on card </label>
-				<input ng-hide="editData" readonly ng-model = "nameOnCard" type="text">
-				<div ng-show="editData" class="popup">
-				    <input required ng-model="editedNameOnCard" type="text" placeholder="{{nameOnCard}}"/>
+				<label ng-show="(editData && credit) || credit"> Name on card </label>
+				<input ng-if="!editData && credit" readonly ng-model = "nameOnCard" type="text">
+				<div ng-show="editData && credit" class="popup">
+				    <input required ng-model="editedNameOnCard" type="text" placeholder="Enter name on card"/>
 			        <option class="" value=""></option>
 			        </select>
 		    	</div>
-				<label> Card Number </label>
-				<input ng-hide="editData" readonly ng-model = "cardNumber" type="text">
-				<div ng-show="editData" class="popup">
-				    <input required maxlength="16" ng-model="editedCardNumber" type="text" placeholder="{{cardNumber}}"/>
+				<label ng-show="(editData && credit) || credit"> Card Number </label>
+				<input ng-if="!editData && credit" readonly ng-model = "cardNumber" type="text">
+				<div ng-show="editData && credit" class="popup">
+				    <input required maxlength="16" ng-model="editedCardNumber" type="text" placeholder="Enter card number"/>
 			        <option class="" value=""></option>
 			        </select>
 		    	</div>
-				<label> CVC </label>
-				<input ng-hide="editData" readonly ng-model = "cvc" type="text">
-				<div ng-show="editData" class="popup">
-				    <input required ng-model="editedCVC" type="text" placeholder="{{cvc}}"/>
+				<label ng-show="(editData && credit) || credit"> CVC </label>
+				<input ng-if="!editData && credit" readonly ng-model = "cvc" type="text">
+				<div ng-show="editData && credit" class="popup">
+				    <input required ng-model="editedCVC" type="text" placeholder="Enter CVC"/>
 			        <option class="" value=""></option>
 			        </select>
 		    	</div>
-				<label> Valid Until </label>
-				<input ng-hide="editData" readonly ng-model = "validUntil" type="text">
-				<div ng-show="editData" class="popup">
+				<label ng-show="(editData && credit) || credit"> Valid Until </label>
+				<input ng-if="!editData && credit" readonly ng-model = "validUntil" type="text">
+				<div ng-show="editData && credit" class="popup">
 				    <select ng-model="month" ng-options="month for month in months" required="required">
 						<option class="" value="">
 					</select>
@@ -51,11 +51,23 @@
 						<option class="" value="">
 					</select>
 		    	</div>
-				<p></p>
-				<button class="btn-primary" ng-click="editData = true"> Edit Data</button>
+		    	<label ng-show="(editData && !credit) || !credit"> Owner of account </label>
+		    	<input ng-if="!editData && !credit" readonly ng-model = "accountOwner" type="text">
+		    	<input required ng-show="editData && !credit" type="text" ng-model="$parent.editedAccountOwner" placeholder="Enter the owner of account">
+		    	<label ng-show="(editData && !credit) || !credit"> BIC </label>
+		    	<input ng-if="!editData && !credit" readonly ng-model = "BIC" type="text">
+		    	<input required ng-if="editData && !credit" type="text" ng-model="$parent.editedBIC" placeholder="Enter the BIC of account">
+		    	<label ng-show="(editData && !credit) || !credit"> IBAN </label>
+		    	<input ng-if="!editData && !credit" readonly ng-model = "IBAN" type="text">
+		    	<input required ng-if="editData && !credit" type="text" ng-model="$parent.editedIBAN" placeholder="Enter the IBAN of account">
+		    	<label ng-show="(editData && !credit) || !credit"> Bank account number </label>
+		    	<input ng-if="!editData && !credit" readonly ng-model = "bankNo" type="text">
+		    	<input required ng-if="editData && !credit" type="text" ng-model="$parent.editedBankNo" placeholder="Enter the bank account number">
+				<button class="btn-primary" ng-hide="editData" ng-click="editData = true"> Edit Data</button>
 				<p></p>
 				<div ng-show="editData" class="popup">
-				    <button class="btn-primary" ng-click="saveData(editedNameOnCard,editedCardNumber,editedCVC)"> Save Changes</button>
+				    <button class="btn-primary" ng-click="saveData(editedPaymentMethod,editedNameOnCard,editedCardNumber,editedCVC,
+				    editedAccountOwner,editedBIC,editedIBAN,editedBankNo)"> Save Changes</button>
 		    	</div>
 				<p></p>
 				<button class="btn-primary" ng-click="todos()">Back to todo</button>

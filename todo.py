@@ -17,7 +17,7 @@ app.add_url_rule("/mark/<string:action>", view_func=mark.as_view("mark"), method
 app.add_url_rule("/account", view_func=account.as_view("account"), methods=["POST"])
 app.add_url_rule("/signin", view_func=signin.as_view("signin"), methods=["POST"])
 app.add_url_rule("/myaccount", view_func=myinfo.as_view("myinfo"), methods=["GET","PUT"])
-app.add_url_rule("/myportal", view_func=myPortal.as_view("myPortal"), methods=["GET"])
+app.add_url_rule("/myportal", view_func=myPortal.as_view("myPortal"), methods=["GET","PUT"])
 
 # make_response(open("index.html").read()) for no caching
 

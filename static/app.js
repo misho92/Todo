@@ -36,7 +36,9 @@ app.factory("Account", ["$resource", function($resource) {
 	}]);
 
 app.factory("Portal", ["$resource", function($resource) {
-	   return $resource("/myportal", null,{});
+	   return $resource("/myportal", null,{
+		   "saveData": {method: "PUT"}
+	   });
 	}]);
 
 app.factory("Register", ["$resource", function($resource) {
@@ -169,10 +171,17 @@ app.controller("InfoController",["$scope","$window","Account","Todos", function 
 app.controller("PortalController",["$scope","$window","Portal", function ($scope,$window,Portal){
 	Portal.get(function(data){
 		$scope.paymentMethod = data.paymentData[0]["payment"];
+		$scope.editedPaymentMethod = $scope.paymentMethod
+		if($scope.paymentMethod == "Credit Card") $scope.credit = true;
+		else $scope.credit = false;
 		$scope.nameOnCard = data.paymentData[0]["nameOnCard"];
 		$scope.cardNumber = data.paymentData[0]["cardNumber"];
 		$scope.cvc = data.paymentData[0]["cvc"];
 		$scope.validUntil = data.paymentData[0]["validUntil"];
+		$scope.accountOwner = data.paymentData[0]["owner"];
+		$scope.BIC = data.paymentData[0]["BIC"];
+		$scope.IBAN = data.paymentData[0]["IBAN"];
+		$scope.bankNo = data.paymentData[0]["bankAccountNumber"];
 	})
 	
 	$scope.payments = ["Credit Card","Direct Debit"];
@@ -193,13 +202,43 @@ app.controller("PortalController",["$scope","$window","Portal", function ($scope
     	$scope.year = year;
     }
     
-    $scope.saveData = function(nameOnCard,cardNumber,cvc){
-    	console.log(nameOnCard);
-    	console.log(cardNumber);
-    	console.log(cvc);
-    	console.log($scope.month);
-    	console.log($scope.year);
-    	console.log($scope.editedPaymentMethod);
+    $scope.saveData = function(paymentMethod,nameOnCard,cardNumber,cvc,owner,BIC,IBAN,bankAccountNumber){
+    	//earlier in THIS year
+        if($scope.month < (new Date().getMonth() + 1) && $scope.year == new Date().getFullYear()){
+           	alert("Card not valid. Selected time in the past");
+        }
+        else{
+	    	Portal.saveData({payment: paymentMethod,
+	    					 nameOnCard: nameOnCard,
+	    					 cardNumber: cardNumber,
+	    					 cvc: cvc,
+	    					 validUntil: $scope.month + "/" + $scope.year,
+	    					 owner: owner,
+	    					 BIC: BIC,
+	    					 IBAN: IBAN,
+	    					 bankAccountNumber: bankAccountNumber},function(data){
+	    						 if(data.success){
+	    							 Portal.get(function(data){
+	    									$scope.paymentMethod = data.paymentData[0]["payment"];
+	    									$scope.editedPaymentMethod = $scope.paymentMethod
+	    									if($scope.paymentMethod == "Credit Card") $scope.credit = true;
+	    									else $scope.credit = false;
+	    									$scope.nameOnCard = data.paymentData[0]["nameOnCard"];
+	    									$scope.cardNumber = data.paymentData[0]["cardNumber"];
+	    									$scope.cvc = data.paymentData[0]["cvc"];
+	    									$scope.validUntil = data.paymentData[0]["validUntil"];
+	    									$scope.accountOwner = data.paymentData[0]["owner"];
+	    									$scope.BIC = data.paymentData[0]["BIC"];
+	    									$scope.IBAN = data.paymentData[0]["IBAN"];
+	    									$scope.bankNo = data.paymentData[0]["bankAccountNumber"];
+	    									$scope.editData = false;
+	    								})
+	    						 }
+	    						 else{
+	    							 alert("Error in displaying data")
+	    						 }
+	    					 })
+        }
     }
 	
 //go back button to todos list
@@ -209,20 +248,12 @@ app.controller("PortalController",["$scope","$window","Portal", function ($scope
 }]);
 
 app.controller("RegistrationController",["$scope","$window","Register", function ($scope,$window,Register){
-	$scope.yourEmail = "abv@abv.bg";
-	$scope.yourPass = "test";
-	$scope.yourCompany = "test";
-	$scope.yourFName = "Misho";
-	$scope.yourLName = "Test";
-	$scope.yourNameOnCard = "Misho Test";
-	$scope.yourCardNumber = "4111111111111111";
-	$scope.yourCVC = "123";
 	
 //register function checks if the supplied card details are valid (date of expire not in past)
 //additionally checks if email is already in use (database) if everything is correct the registration details are forwarded into database 
 //and in iterojs which results in a new customer in sandbox, finally on success user get signed in and redirected to his todo account
 	$scope.register = function (){
-			//earlier in THIS year
+		//earlier in THIS year
         if($scope.month < (new Date().getMonth() + 1) && $scope.year == new Date().getFullYear()){
            	alert("Card not valid. Selected time in the past");
         }
@@ -237,7 +268,11 @@ app.controller("RegistrationController",["$scope","$window","Register", function
    					      nameOnCard: $scope.yourNameOnCard,
    					      cardNumber: $scope.yourCardNumber,
    					      cvc: $scope.yourCVC,
-   					      validUntil: $scope.month + "/" + $scope.year},function(items){
+   					      validUntil: $scope.month + "/" + $scope.year,
+   					      ownerOfAccount: $scope.accountOwner,
+   					      BIC: $scope.BIC,
+   					      IBAN: $scope.IBAN,
+   					      bankAccountNumber: $scope.bankNo},function(items){
    					    	  if(items.success){
    					    		  var fakePSP = ["CreditCard:Paymill","Debit:Paymill"];
    					    		  var bearer = "";

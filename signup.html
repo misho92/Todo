@@ -48,10 +48,14 @@
 			<select ng-show="credit" ng-model="year" ng-change="validity(month,year)" ng-options="year for year in years" required="required">
 				<option class="" value="">
 			</select>
-			<input ng-if="credit == false" type="text" ng-model="accountOwner" placeholder="Enter the owner of account">
-			<input ng-if="credit == false" type="text" ng-model="BIC" placeholder="Enter the BIC of account">
-			<input ng-if="credit == false" type="text" ng-model="IBAN" placeholder="Enter the IBAN of account">
-			<input ng-if="credit == false" type="text" ng-model="bankNo" placeholder="Enter the bank account number">
+			<input required ng-if="credit == false" type="text" ng-model="$parent.accountOwner" placeholder="Enter the owner of account">
+			<p></p>
+			<input required ng-if="credit == false" type="text" ng-model="$parent.BIC" placeholder="Enter the BIC of account">
+			<p></p>
+			<input required ng-if="credit == false" type="text" ng-model="$parent.IBAN" placeholder="Enter the IBAN of account">
+			<p></p>
+			<input required ng-if="credit == false" type="text" ng-model="$parent.bankNo" placeholder="Enter the bank account number">
+			<p></p>
 			<button class="btn-primary" ng-click="register()">Register</button>
 			<p></p>
 			<button class="btn-primary" ng-click="goBack()">Go back</button>
