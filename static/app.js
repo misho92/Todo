@@ -30,14 +30,15 @@ var app = angular.module("todo",["ngRoute","ngResource"])
 
 app.factory("Account", ["$resource", function($resource) {
 	   return $resource("/myaccount", null,{
-		   "saveData": {method: "PUT"},
-		   "changePlan": {method: "PUT"}
+		   "saveData": {method: "PUT"}
 	   });
 	}]);
 
 app.factory("Portal", ["$resource", function($resource) {
 	   return $resource("/myportal", null,{
-		   "saveData": {method: "PUT"}
+		   "saveData": {method: "PUT"},
+		   "changePlan": {method: "PUT"},
+		   "cancelPlan": {method: "PUT"}
 	   });
 	}]);
 
@@ -105,61 +106,40 @@ app.controller("SignInController",["$scope","$window", function ($scope,$window)
 	signIn();
 }])
 
-app.controller("InfoController",["$scope","$window","Account","Todos", function ($scope,$window,Account,Todos){
+app.controller("InfoController",["$scope","$window","Account", function ($scope,$window,Account){
 	//get request for displaying user specific information		
 	Account.get(function(items){
 		$scope.first_name = items.users[0]["first_name"];
+		$scope.username = items.users[0]["first_name"];
 		$scope.last_name = items.users[0]["last_name"];
 		$scope.company = items.users[0]["company"];
-		$scope.plan = items.users[0]["plan"];
+		if(items.users[0]["plan"] == "") $scope.plan = "None"
+		else $scope.plan = items.users[0]["plan"];
 		$scope.email = items.users[0]["email"];
 	})
 
 //save function to save the edited fields of my info section
-	$scope.save = function(){
-		Account.saveData({first_name: $scope.first_name,
-				   last_name: $scope.last_name,
-			       company: $scope.company,
-			       plan: null},function(items){
+	$scope.save = function(firstName,lastName,company,email){
+		Account.saveData({firstName: firstName,
+						  lastName: lastName,
+						  company: company,
+						  email: email},function(items){
 					   if(items.success){
-						   alert("Information saved");
+						   Account.get(function(items){
+								$scope.first_name = items.users[0]["first_name"];
+								$scope.username = items.users[0]["first_name"];
+								$scope.last_name = items.users[0]["last_name"];
+								$scope.company = items.users[0]["company"];
+								if(items.users[0]["plan"] == "") $scope.plan = "None"
+								else $scope.plan = items.users[0]["plan"];
+								$scope.email = items.users[0]["email"];
+								$scope.editData = false;
+							})
 					   } else {
 						   alert("Error in saving");
 					   }
 				   }
 		)
-	}
-	
-	$scope.changePlan = function(){
-		var date = new Date();
-		formattedDate = date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate();
-		if($scope.plan == "L"){
-			Todos.get(function(items){
-				if(items.todoList.length <= 10){
-					Account.changePlan({plan: "S",date: formattedDate},function(result){
-						if(result.success){
-							alert("Plan successfully downgraded to S. The maximum capacity for plan S is 10 todo items only.");
-							$scope.plan = "S";
-						} else {
-							alert("7 days from registration have passed, thus you are no longer allowed to downgrade your plan.");
-						}
-					})
-				}
-				else{
-					alert("Downgrade not possible, items over the maximum of 10 for plan S. Please reduce the numbers to 10 and then try again to downgrade.")
-				}
-			})
-		}
-		else{
-			Account.changePlan({plan: "L",date: null},function(result){
-				if(result.success){
-					   alert("Plan successfully upgraded to L. You can have unlimited number of items.");
-					   $scope.plan = "L";
-				   } else {
-					   alert("Error occurred in upgrading your plan.");
-				   }
-			})	
-		}
 	}
 
 //go back button to todos list
@@ -168,8 +148,9 @@ app.controller("InfoController",["$scope","$window","Account","Todos", function 
 	}
 }]);
 
-app.controller("PortalController",["$scope","$window","Portal", function ($scope,$window,Portal){
+app.controller("PortalController",["$scope","$window","Portal","Todos", function ($scope,$window,Portal,Todos){
 	Portal.get(function(data){
+		$scope.username = data.paymentData[0]["username"];
 		$scope.paymentMethod = data.paymentData[0]["payment"];
 		$scope.editedPaymentMethod = $scope.paymentMethod
 		if($scope.paymentMethod == "Credit Card") $scope.credit = true;
@@ -182,7 +163,60 @@ app.controller("PortalController",["$scope","$window","Portal", function ($scope
 		$scope.BIC = data.paymentData[0]["BIC"];
 		$scope.IBAN = data.paymentData[0]["IBAN"];
 		$scope.bankNo = data.paymentData[0]["bankAccountNumber"];
+		$scope.plan = data.paymentData[0]["plan"];
+		$scope.start = data.paymentData[0]["registered"];
+		$scope.length = "12 months";
+		if($scope.plan == "S") $scope.todosNumber = "10";
+		else $scope.todosNumber = "Unlimited";
+		if($scope.plan == "") $scope.plan = "None", $scope.length = "None", $scope.start = "None", $scope.todosNumber = "None";
 	})
+	
+	$scope.cancelPlan = function(){
+	    if (confirm("Are you sure? All your todos and plan information would be deleted") == true) {
+	    	Portal.cancelPlan({payment: null, plan: null},function(result){
+	    		if(result.success){
+	    			$scope.plan = "None";
+	    			$scope.length = "None";
+	    			$scope.start = "None";
+	    			$scope.todosNumber = "None";
+	    		}
+	    	})
+	    }
+	}
+	
+	$scope.changePlan = function(){
+		var date = new Date();
+		formattedDate = date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate();
+		if($scope.plan == "L"){
+			Todos.get(function(items){
+				if(items.todoList.length <= 10){
+					Portal.changePlan({plan: "S",date: formattedDate, payment: null},function(result){
+						if(result.success){
+							alert("Plan successfully downgraded to S. The maximum capacity for plan S is 10 todo items only.");
+							$scope.plan = "S";
+							$scope.todosNumber = "10";
+						} else {
+							alert("7 days from registration have passed, thus you are no longer allowed to downgrade your plan.");
+						}
+					})
+				}
+				else{
+					alert("Downgrade not possible, items over the maximum of 10 for plan S. Please reduce the numbers to 10 and then try again to downgrade.")
+				}
+			})
+		}
+		else{
+			Portal.changePlan({plan: "L",date: null,payment: null},function(result){
+				if(result.success){
+					   alert("Plan successfully upgraded to L. You can have unlimited number of items.");
+					   $scope.plan = "L";
+					   $scope.todosNumber = "Unlimited";
+				   } else {
+					   alert("Error occurred in upgrading your plan.");
+				   }
+			})	
+		}
+	}
 	
 	$scope.payments = ["Credit Card","Direct Debit"];
 	$scope.Payment = function(payment) {

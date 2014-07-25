@@ -1,6 +1,6 @@
 #div {
     	text-align: center;
-    	width: 200px;
+    	width: 250px;
 		position: absolute;
 		top:0;
 		bottom: 0;
@@ -37,13 +37,13 @@
 		position: absolute; right: 10px;
 	}
 	
-#todoTitle{
+h1{
 		line-height: 140px
 	}
 	
-#paymentData {
+#data {
     	text-align: center;
-    	width: 200px;
+    	width: 250px;
 		position: relative;
 		top: 100;
 		bottom: 0;
@@ -51,3 +51,24 @@
 		right: 0;
 		margin: auto;
 	}
+	
+#back {
+    	text-align: center;
+    	width: 200px;
+		position: absolute;
+		top: 100;
+		bottom: 100;
+		left: 0;
+		right: 0;
+		margin: auto;
+	}
+	
+.left {
+    float: left;
+    width: 50%;
+}
+
+.right {
+    float: right;
+    width: 50%;
+}

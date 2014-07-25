@@ -9,14 +9,29 @@
 		<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.0-beta.14/angular-resource.min.js"></script>
 	</head>
 	<body>
+	<div ng-controller="PortalController">
+		<div class="navbar navbar-inverse navbar-fixed-top">
+		    <div class="navbar-inner">
+			    <div class="container-fluid">
+				    <p class="navbar-text pull-right">
+				    	<a href ="/todos"> Home </a>
+				    	&nbsp
+					    <a href="/portal"> My portal</a>
+					   	&nbsp
+					   	<a href="/myinfo">Hi, {{username}}</a>
+					   	<a href="/signout" class="btn-small btn-primary" ng-click="signout()"> Sign out</a>
+				    </p>
+			    </div>
+		    </div>
+	    </div>
 		<h1 align="center"> My Portal </h1>
-		<div id="paymentData" ng-controller="PortalController">
-				<p> My Payment Data </p>
+		<div class="left">
+			<div id="data">
+				<h5> My Payment Data </h5>
 				<label> Payment Method </label>
 				<input ng-hide="editData" readonly ng-model ="paymentMethod" type="text">
 				<div ng-show="editData" class="popup">
-				    <select required="required" ng-model="editedPaymentMethod" ng-change="Payment(editedPaymentMethod)" ng-options="payment for payment in payments" required="required">
-			        <option class="" value=""></option>
+				    <select required="required" ng-model="editedPaymentMethod" ng-change="Payment(editedPaymentMethod)" ng-options="payment for payment in payments" required="required">			        <option class="" value=""></option>
 			        </select>
 		    	</div>
 				<label ng-show="(editData && credit) || credit"> Name on card </label>
@@ -44,7 +59,7 @@
 				<input ng-if="!editData && credit" readonly ng-model = "validUntil" type="text">
 				<div ng-show="editData && credit" class="popup">
 				    <select ng-model="month" ng-options="month for month in months" required="required">
-						<option class="" value="">
+					<option class="" value="">
 					</select>
 					<p></p>
 					<select ng-model="year" ng-change="validity(month,year)" ng-options="year for year in years" required="required">
@@ -68,9 +83,30 @@
 				<div ng-show="editData" class="popup">
 				    <button class="btn-primary" ng-click="saveData(editedPaymentMethod,editedNameOnCard,editedCardNumber,editedCVC,
 				    editedAccountOwner,editedBIC,editedIBAN,editedBankNo)"> Save Changes</button>
-		    	</div>
+			   	</div>
 				<p></p>
+			</div>
+			<div id="back">
 				<button class="btn-primary" ng-click="todos()">Back to todo</button>
+			</div>
 		</div>
+		<div class="right">
+				<div id="data">
+					<h5> My Current subscription details </h5>
+					<label> Current plan </label>
+					<input readonly ng-model ="plan" type="text">
+					<label> Started on </label>
+					<input readonly ng-model ="start" type="text">
+					<label> Length </label>
+					<input readonly ng-model ="length" type="text">
+					<label> Todo items for this plan </label>
+					<input readonly ng-model ="todosNumber" type="text">
+					<p></p>
+					<button class="btn-primary" ng-click="changePlan()">Change Plan</button>
+					<p></p>
+					<button class="btn btn-danger" ng-click="cancelPlan()">Cancel Plan</button>
+				</div>
+			</div>
+	</div>
 	</body>
 </html>

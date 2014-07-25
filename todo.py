@@ -83,6 +83,7 @@ def myaccount():
     return send_file("myaccount.html")
 
 @app.route("/portal")
+@auth.login_required
 def portal():
     return send_file("portal.html")
 

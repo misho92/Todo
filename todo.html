@@ -16,8 +16,10 @@
 				    <div class="navbar-inner">
 					    <div class="container-fluid">
 						    <p class="navbar-text pull-right">
-							    <a href="/portal" ng-click="myPortal()"> My portal</a>
-							   	&nbsp &nbsp &nbsp
+						    	<a href ="/todos"> Home </a>
+						    	&nbsp
+							    <a href="/portal"> My portal</a>
+							   	&nbsp
 							   	<a id="link" href="/myinfo">Hi, {{username}}</a>
 							   	<a href="/signout" class="btn-small btn-primary" ng-click="signout()"> Sign out</a>
 						    </p>
@@ -25,7 +27,7 @@
 				    </div>
 			    </div>
 		    <p></p>
-			<h1 id="todoTitle" align="center"> My ToDo List </h1>
+			<h1 align="center"> My ToDo List </h1>
 			<p></p>
 		    <input required type="text" id="todoText" ng-model="todoText" size="100" style="width: 500px" placeholder="add new todo here"/>
 		    <input class="btn-primary" type="submit" ng-click="addTodo()" value="Insert todo"/>

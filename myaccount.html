@@ -11,22 +11,42 @@
 	<body>
 		<div id="div">
 			<form ng-controller="InfoController">
+				<div class="navbar navbar-inverse navbar-fixed-top">
+				    <div class="navbar-inner">
+					    <div class="container-fluid">
+						    <p class="navbar-text pull-right">
+						    	<a href ="/todos"> Home </a>
+						    	&nbsp
+							    <a href="/portal"> My portal</a>
+							   	&nbsp
+							   	<a id="link" href="/myinfo">Hi, {{username}}</a>
+							   	<a href="/signout" class="btn-small btn-primary" ng-click="signout()"> Sign out</a>
+						    </p>
+					    </div>
+				    </div>
+			    </div>
+			    <h1> My Account </h1>
 				<p></p>
 				<p> Personal Information </p>
 				<label> First name </label>
-				<input ng-model = "first_name" type="text">
+				<input ng-hide="editData" readonly ng-model = "first_name" type="text">
+				<input ng-show="editData" required type="text" ng-model="editedFirstName" placeholder="Enter first name">
 				<label> Last name </label>
-				<input ng-model = "last_name" type="text">
+				<input ng-hide="editData" readonly ng-model = "last_name" type="text">
+				<input ng-show="editData" required type="text" ng-model="editedLastName" placeholder="Enter last name">
 				<label> Company </label>
-				<input ng-model = "company" type="text">
+				<input ng-hide="editData" readonly ng-model = "company" type="text">
+				<input ng-show="editData" required type="text" ng-model="editedCompany" placeholder="Enter company">
 				<label> Email </label>
-				<input readonly ng-model = "email" type="text">
+				<input ng-hide="editData" readonly ng-model = "email" type="text">
+				<input ng-show="editData" required type="email" ng-model="editedEmail" placeholder="Enter email">
 				<label> Current plan </label>
-				<input readonly ng-model = "plan" type="text">
+				<input ng-hide="editData" readonly ng-model = "plan" type="text">
 				<p></p>
-				<button class="btn-primary" ng-click="changePlan()">Change Plan</button>
+				<button class="btn-primary" ng-hide="editData" ng-click="editData = true"> Edit Data</button>
 				<p></p>
-				<button class="btn-primary" ng-click="save()">Save change</button>
+				<button class="btn-primary" ng-show="editData" ng-click="save(editedFirstName,editedLastName,editedCompany,editedEmail)">
+				Save changes</button>
 				<p></p>
 				<button class="btn-primary" ng-click="todos()">Back to todo</button>
 			</form>

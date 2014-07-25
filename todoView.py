@@ -136,8 +136,52 @@ class myinfo(flask.views.MethodView):
         conn = sqlite3.connect("todo.sqlite")
         c = conn.cursor()
         args = json.loads(request.data)
-        # if function is invoked for changing plan option
-        if args["plan"] != None:
+        c.execute("UPDATE user SET first_name = ? , last_name = ? , company = ?, email = ? WHERE id = ?",(args["firstName"],args["lastName"],
+                                                                                                   args["company"],args["email"],userId))
+        conn.commit()
+        return jsonify({ "success": True })
+        
+class myPortal (flask.views.MethodView):
+    
+    def get(self):
+        conn = sqlite3.connect("todo.sqlite")
+        c = conn.cursor()
+        cur = c.execute("SELECT payment,name_on_card,card_number,CVC,valid_until,owner_of_account,BIC,IBAN,bank_account_number,first_name,plan, "
+        "registered FROM user WHERE id = ?" , (userId,))
+        entries = [dict(payment=str(row[0]), nameOnCard=str(row[1]), cardNumber=str(row[2]), cvc=str(row[3]), validUntil=str(row[4]),
+                    owner=str(row[5]),BIC=str(row[6]),IBAN=str(row[7]),bankAccountNumber=str(row[8]),username=str(row[9]),plan=str(row[10]),
+                    registered=str(row[11])) for row in cur.fetchall()]
+        return jsonify({
+            "success": True,
+            "paymentData": [{ "payment": item["payment"], "nameOnCard": item["nameOnCard"], "cardNumber": item["cardNumber"], "cvc": item["cvc"], 
+                             "validUntil": item["validUntil"], "owner": item["owner"], "BIC": item["BIC"], "IBAN": item["IBAN"], 
+                             "bankAccountNumber": item["bankAccountNumber"], "username": item["username"], "plan": item["plan"], 
+                              "registered": item["registered"]} for item in entries],
+            "user": userId
+        })
+        
+    def put(self):
+        conn = sqlite3.connect("todo.sqlite")
+        c = conn.cursor()
+        args = json.loads(request.data)
+        #edit payment data of credit card
+        if args["payment"] == "Credit Card":
+            c.execute("UPDATE user SET payment = 'Credit Card' , name_on_card = ? , card_number = ? , CVC = ?  , valid_until = ? , "
+            "owner_of_account = '' , BIC = '' , IBAN = '' , bank_account_number = '' WHERE id = ?",(args["nameOnCard"],args["cardNumber"],
+                                                                                                    args["cvc"],args["validUntil"],userId))
+            conn.commit()
+            return jsonify({ "success": True })
+        
+        #edit payment data of direct debit
+        elif args["payment"] == "Direct Debit":
+            c.execute("UPDATE user SET payment = 'Direct Debit' , owner_of_account = ? , BIC = ? , IBAN = ? , bank_account_number = ? ," 
+            "name_on_card = '' , card_number = '' ,  CVC = '' , valid_until = ''  WHERE id = ?",(args["owner"],args["BIC"],args["IBAN"],
+                                                                                                args["bankAccountNumber"],userId))
+            conn.commit()
+            return jsonify({ "success": True })
+        
+        #change plan
+        elif args["plan"] != None:
             if args["date"] != None:
                 c.execute("SELECT registered FROM user WHERE id = ?",(userId,))
                 registered = c.fetchone()[0]
@@ -154,43 +198,10 @@ class myinfo(flask.views.MethodView):
                 c.execute("UPDATE user SET plan = 'L' WHERE id = ?", (userId,))
                 conn.commit()
                 return jsonify({ "success": True })
-        # if function is invoked to save edited info fields
-        else:
-            c.execute("UPDATE user SET first_name = ? , last_name = ? , company = ? WHERE id = ?",(args["first_name"],args["last_name"],
-                                                                                                   args["company"],userId))
-            conn.commit()
-            return jsonify({ "success": True })
         
-class myPortal (flask.views.MethodView):
-    
-    def get(self):
-        conn = sqlite3.connect("todo.sqlite")
-        c = conn.cursor()
-        cur = c.execute("SELECT payment,name_on_card,card_number,CVC,valid_until,owner_of_account,BIC,IBAN,bank_account_number FROM user "
-        "WHERE id = ?" , (userId,))
-        entries = [dict(payment=str(row[0]), nameOnCard=str(row[1]), cardNumber=str(row[2]), cvc=str(row[3]), validUntil=str(row[4]),
-                        owner=str(row[5]),BIC=str(row[6]),IBAN=str(row[7]),bankAccountNumber=str(row[8]))for row in cur.fetchall()]
-        return jsonify({
-            "success": True,
-            "paymentData": [{ "payment": item["payment"], "nameOnCard": item["nameOnCard"], "cardNumber": item["cardNumber"], "cvc": item["cvc"], 
-                             "validUntil": item["validUntil"], "owner": item["owner"], "BIC": item["BIC"], "IBAN": item["IBAN"], 
-                             "bankAccountNumber": item["bankAccountNumber"] } for item in entries],
-            "user": userId
-        })
-        
-    def put(self):
-        conn = sqlite3.connect("todo.sqlite")
-        c = conn.cursor()
-        args = json.loads(request.data)
-        if args["payment"] == "Credit Card":
-            c.execute("UPDATE user SET payment = 'Credit Card' , name_on_card = ? , card_number = ? , CVC = ?  , valid_until = ? , "
-            "owner_of_account = '' , BIC = '' , IBAN = '' , bank_account_number = '' WHERE id = ?",(args["nameOnCard"],args["cardNumber"],
-                                                                                                    args["cvc"],args["validUntil"],userId))
-            conn.commit()
-            return jsonify({ "success": True })
+        #cancel plan
         else:
-            c.execute("UPDATE user SET payment = 'Direct Debit' , owner_of_account = ? , BIC = ? , IBAN = ? , bank_account_number = ? ," 
-            "name_on_card = '' , card_number = '' ,  CVC = '' , valid_until = ''  WHERE id = ?",(args["owner"],args["BIC"],args["IBAN"],
-                                                                                                args["bankAccountNumber"],userId))
+            c.execute("UPDATE user SET plan = '' WHERE id = ?", (userId,))
+            c.execute("DELETE FROM task WHERE user_id = ?", (userId,))
             conn.commit()
             return jsonify({ "success": True })
