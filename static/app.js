@@ -196,36 +196,40 @@ app.controller("PortalController",["$scope","$window","Portal","Todos", function
 	}
 	
 	$scope.changePlan = function(){
-		var date = new Date();
-		formattedDate = date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate();
-		if($scope.plan == "L"){
-			Todos.get(function(items){
-				if(items.todoList.length <= 10){
-					Portal.changePlan({plan: "S",date: formattedDate, payment: null},function(result){
-						if(result.success){
-							alert("Plan successfully downgraded to S. The maximum capacity for plan S is 10 todo items only.");
-							$scope.plan = "S";
-							$scope.todosNumber = "10";
-						} else {
-							alert("7 days from registration have passed, thus you are no longer allowed to downgrade your plan.");
+			var date = new Date();
+			formattedDate = date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate();
+			if($scope.plan == "L"){
+				if (confirm("Are you sure you want to change your plan to S?") == true) {
+					Todos.get(function(items){
+						if(items.todoList.length <= 10){
+							Portal.changePlan({plan: "S",date: formattedDate, payment: null},function(result){
+								if(result.success){
+									alert("Plan successfully downgraded to S. The maximum capacity for plan S is 10 todo items only.");
+									$scope.plan = "S";
+									$scope.todosNumber = "10";
+								} else {
+									alert("7 days from registration have passed, thus you are no longer allowed to downgrade your plan.");
+								}
+							})
+						}
+						else{
+							alert("Downgrade not possible, items over the maximum of 10 for plan S. Please reduce the numbers to 10 and then try again to downgrade.")
 						}
 					})
 				}
-				else{
-					alert("Downgrade not possible, items over the maximum of 10 for plan S. Please reduce the numbers to 10 and then try again to downgrade.")
-				}
-			})
-		}
+			}
 		else{
-			Portal.changePlan({plan: "L",date: null,payment: null},function(result){
-				if(result.success){
-					   alert("Plan successfully upgraded to L. You can have unlimited number of items.");
-					   $scope.plan = "L";
-					   $scope.todosNumber = "Unlimited";
-				   } else {
-					   alert("Error occurred in upgrading your plan.");
-				   }
-			})	
+			if (confirm("Are you sure you want to change your plan to L?") == true) {
+				Portal.changePlan({plan: "L",date: null,payment: null},function(result){
+					if(result.success){
+						   alert("Plan successfully upgraded to L. You can have unlimited number of items.");
+						   $scope.plan = "L";
+						   $scope.todosNumber = "Unlimited";
+					   } else {
+						   alert("Error occurred in upgrading your plan.");
+					   }
+				})	
+			}
 		}
 	}
 	

@@ -28,12 +28,6 @@
 			    <h1> My Account </h1>
 				<p></p>
 				<p> Personal Information </p>
-				<label> First name </label>
-				<input ng-hide="editData" readonly ng-model = "first_name" type="text">
-				<input ng-show="editData" required type="text" ng-model="editedFirstName" placeholder="Enter first name">
-				<label> Last name </label>
-				<input ng-hide="editData" readonly ng-model = "last_name" type="text">
-				<input ng-show="editData" required type="text" ng-model="editedLastName" placeholder="Enter last name">
 				<label> Title </label>
 				<input ng-hide="editData" readonly ng-model = "title" type="text">
 				<div ng-show="editData" class="popup">
@@ -41,6 +35,12 @@
 					    <option class="" value=""></option>
 			        </select>
 		    	</div>
+				<label> First name </label>
+				<input ng-hide="editData" readonly ng-model = "first_name" type="text">
+				<input ng-show="editData" required type="text" ng-model="editedFirstName" placeholder="Enter first name">
+				<label> Last name </label>
+				<input ng-hide="editData" readonly ng-model = "last_name" type="text">
+				<input ng-show="editData" required type="text" ng-model="editedLastName" placeholder="Enter last name">
 				<label> Company </label>
 				<input ng-hide="editData" readonly ng-model = "company" type="text">
 				<input ng-show="editData" required type="text" ng-model="editedCompany" placeholder="Enter company">
