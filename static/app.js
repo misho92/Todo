@@ -110,29 +110,32 @@ app.controller("InfoController",["$scope","$window","Account", function ($scope,
 	//get request for displaying user specific information		
 	Account.get(function(items){
 		$scope.first_name = items.users[0]["first_name"];
-		$scope.username = items.users[0]["first_name"];
+		$scope.username = items.users[0]["title"] + " " + items.users[0]["first_name"];
 		$scope.last_name = items.users[0]["last_name"];
 		$scope.company = items.users[0]["company"];
 		if(items.users[0]["plan"] == "") $scope.plan = "None"
 		else $scope.plan = items.users[0]["plan"];
 		$scope.email = items.users[0]["email"];
+		$scope.title = items.users[0]["title"];
 	})
 
 //save function to save the edited fields of my info section
-	$scope.save = function(firstName,lastName,company,email){
+	$scope.save = function(firstName,lastName,company,email,title){
 		Account.saveData({firstName: firstName,
 						  lastName: lastName,
 						  company: company,
-						  email: email},function(items){
+						  email: email,
+						  title: title},function(items){
 					   if(items.success){
 						   Account.get(function(items){
-								$scope.first_name = items.users[0]["first_name"];
-								$scope.username = items.users[0]["first_name"];
+							   $scope.first_name = items.users[0]["first_name"];
+								$scope.username = items.users[0]["title"] + " " + items.users[0]["first_name"];
 								$scope.last_name = items.users[0]["last_name"];
 								$scope.company = items.users[0]["company"];
 								if(items.users[0]["plan"] == "") $scope.plan = "None"
 								else $scope.plan = items.users[0]["plan"];
 								$scope.email = items.users[0]["email"];
+								$scope.title = items.users[0]["title"];
 								$scope.editData = false;
 							})
 					   } else {
@@ -141,6 +144,14 @@ app.controller("InfoController",["$scope","$window","Account", function ($scope,
 				   }
 		)
 	}
+	
+	$scope.titles = ["Mr","Mrs","Miss"];
+	$scope.Title = function(title) {
+    	$scope.title = title;
+    }
+    $scope.title = {
+        payment: ""
+    };
 
 //go back button to todos list
 	$scope.todos = function(){
@@ -150,7 +161,7 @@ app.controller("InfoController",["$scope","$window","Account", function ($scope,
 
 app.controller("PortalController",["$scope","$window","Portal","Todos", function ($scope,$window,Portal,Todos){
 	Portal.get(function(data){
-		$scope.username = data.paymentData[0]["username"];
+		$scope.username = data.paymentData[0]["title"] + " " + data.paymentData[0]["username"];
 		$scope.paymentMethod = data.paymentData[0]["payment"];
 		$scope.editedPaymentMethod = $scope.paymentMethod
 		if($scope.paymentMethod == "Credit Card") $scope.credit = true;
@@ -172,7 +183,7 @@ app.controller("PortalController",["$scope","$window","Portal","Todos", function
 	})
 	
 	$scope.cancelPlan = function(){
-	    if (confirm("Are you sure? All your todos and plan information would be deleted") == true) {
+	    if (confirm("Are you sure? All your todos and subscription details would be deleted") == true) {
 	    	Portal.cancelPlan({payment: null, plan: null},function(result){
 	    		if(result.success){
 	    			$scope.plan = "None";
@@ -298,6 +309,7 @@ app.controller("RegistrationController",["$scope","$window","Register", function
    					      firstName: $scope.yourFName,
    					      lastName: $scope.yourLName,
    					      plan: $scope.plan,
+   					      title: $scope.title,
    					      payment: $scope.paymentMethod,
    					      nameOnCard: $scope.yourNameOnCard,
    					      cardNumber: $scope.yourCardNumber,
@@ -310,26 +322,27 @@ app.controller("RegistrationController",["$scope","$window","Register", function
    					    	  if(items.success){
    					    		  var fakePSP = ["CreditCard:Paymill","Debit:Paymill"];
    					    		  var bearer = "";
-   					    		  if($scope.selectedItem == "Credit Card") {
+   					    		  if($scope.paymentMethod == "Credit Card") {
    					    			  bearer = fakePSP[0];
    					    		  }
    					    		  else{
    					    			  bearer = fakePSP[1];
    					    		  }
    					    		  signupService = new IteroJS.Signup();
-   					    		  paymentService = new IteroJS.Payment({ publicApiKey : "538deacd1d8dd0113010b884" }, 
+   					    		  paymentService = new IteroJS.Payment({ publicApiKey : "53d604d651f4599a9c52c2b9" }, 
    					    		  function (ready){alert("Ok")}, 
    					    		  function(error) {alert("Error occurred")});
    					    		  var cart = {
-   					    		      "planVariantId": "53902b281d8dd00dc46cedb6"
+   					    		      "planVariantId": "53d60e1851f4599a9c52c2d5"
    					    		  };
    					    		  var customer = {
    					    			  "firstName": $scope.yourFName,
    					    			  "lastName": $scope.yourLName,
-   					    			  "emailAddress": $scope.yourEmail
+   					    			  "emailAddress": $scope.yourEmail,
+   					    			  "customFields.title": $scope.title
    					    		  };
    					    		  var paymentData = {
-   					    			  "bearer": "InvoicePayment", //bearer,
+   					    			  "bearer": "InvoicePayment",//bearer,
    					    			  "cardNumber": $scope.yourCardNumber,
    					    			  "expiryMonth": $scope.month,
    					    			  "expiryYear": $scope.year,
@@ -339,12 +352,12 @@ app.controller("RegistrationController",["$scope","$window","Register", function
    					    		  signupService.subscribe(paymentService, cart, customer, paymentData,
    					    		      function (subscribeResult) {
    					    			      alert("Success!");
+	   					    			  alert("Registration succeeded. Logging you in.")
+	   	   					    		  $window.location="/todos";
    					    		      },
    					    		      function (errorData) {
    					    		    	  alert("Something went wrong!");
    					    		      });
-   					    		  alert("Registration succeeded. Logging you in.")
-   					    		  $window.location="/todos";
    					    	  } else {
    					    		  alert("Email already taken, please choose another one");
    					    	  }
@@ -360,6 +373,14 @@ app.controller("RegistrationController",["$scope","$window","Register", function
     	else $scope.credit = false;
     }
     $scope.paymentMethod = {
+        payment: ""
+    };
+    
+    $scope.titles = ["Mr","Mrs","Miss"];
+	$scope.Title = function(title) {
+    	$scope.title = title;
+    }
+    $scope.title = {
         payment: ""
     };
     
@@ -392,8 +413,8 @@ app.controller("TodosController",["$scope","$window","Todos","TodosDelete","Mark
 	var plan = "";
 	Todos.get(function(items){
 		$scope.items = items.todoList;
-		$scope.username = items.username;
-		plan = items.plan;
+		$scope.username = items.row[2] + " " + items.row[0];
+		plan = items.row[1];
 		angular.forEach($scope.items, function(item) {
 	  		if(item.done == 1) item.done = true;
 		});

@@ -3,7 +3,8 @@
 	<head>
 		<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.0-beta.14/angular.min.js"></script>
 		<link href="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.1/css/bootstrap-combined.min.css" rel="stylesheet">
-		<script type="text/javascript" src="https://sandbox.pactas.com/selfService/iterojs"></script>
+		<!-- <script type="text/javascript" src="https://sandbox.pactas.com/selfService/iterojs"></script> -->
+		<script type="text/javascript" src="http://itero.demo.pactas.com/selfService/iterojs"></script>
 		<script type="text/javascript" src="http://127.0.0.1:5000/app.js"></script>
 		<link href="http://127.0.0.1:5000/styles.css" rel="stylesheet">
 		<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.0-beta.14/angular-route.min.js"></script>
@@ -18,6 +19,12 @@
 			<input id="company" required type="text" ng-model="yourCompany" placeholder="Enter your company">
 			<input id="fName" required type="text" ng-model="yourFName" placeholder="Enter your first name">
 			<input id="lName" required type="text" ng-model="yourLName" placeholder="Enter your last name">
+			<p> Choose your title </p>
+			<div>
+				<select ng-model="title" ng-change="Title(title)" ng-options="title for title in titles" required="required">
+				<option class="" value=""></option>
+				</select>
+			</div>
 			<p> Choose your plan </p>
 			<div>
 				<i class="icon icon-info-sign" title="S - Small plan is just for 10 todo items, where as L - Large gives you unlimited number of todos. You can downgrade from L to S within the first 7 days of registration, where as upgrade is possible at any time"></i>

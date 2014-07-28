@@ -18,14 +18,12 @@ class todo(flask.views.MethodView):
         c = conn.cursor()
         cur = c.execute("SELECT * FROM task WHERE user_id = ?", (userId,))
         entries = [dict(id=str(row[0]), title=str(row[1]), done=str(row[2]), user_id=str(row[3])) for row in cur.fetchall()]
-        c.execute("SELECT first_name FROM user WHERE id = ?", (userId,))
-        username = c.fetchone()[0]
-        c.execute("SELECT plan FROM user WHERE id = ?", (userId,))
+        c.execute("SELECT first_name,plan,title FROM user WHERE id = ?", (userId,))
+        row = c.fetchone()
         return jsonify({
             "success": True,
             "todoList": [{ "task": item["title"], "id": item["id"], "done": item["done"], "user_id": item["user_id"] } for item in entries],
-            "username": username,
-            "plan": c.fetchone()[0]
+            "row": row
         })
 
 # post request        
@@ -99,13 +97,13 @@ class account(flask.views.MethodView):
             date = strftime("%Y-%m-%d", gmtime())
             if args["payment"] == "Credit Card":
                 c.execute("INSERT INTO user (email,first_name,last_name,company,password,plan,registered,payment,name_on_card,card_number,CVC," 
-                "valid_until) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)",(args["email"],args["firstName"],args["lastName"],args["company"],password,args["plan"],
-                                                            date,args["payment"],args["nameOnCard"],args["cardNumber"],args["cvc"],args["validUntil"]))
+                "valid_until,title) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)",(args["email"],args["firstName"],args["lastName"],args["company"],password,args["plan"],
+                                                    date,args["payment"],args["nameOnCard"],args["cardNumber"],args["cvc"],args["validUntil"],args["title"]))
                 conn.commit()
             else:
                 c.execute("INSERT INTO user (email,first_name,last_name,company,password,plan,registered,payment,owner_of_account,BIC,IBAN," 
-                "bank_account_number) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)",(args["email"],args["firstName"],args["lastName"],args["company"],password,
-                                     args["plan"],date,args["payment"],args["ownerOfAccount"],args["BIC"],args["IBAN"],args["bankAccountNumber"]))
+                "bank_account_number,title) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)",(args["email"],args["firstName"],args["lastName"],args["company"],password,
+                                args["plan"],date,args["payment"],args["ownerOfAccount"],args["BIC"],args["IBAN"],args["bankAccountNumber"],args["title"]))
                 conn.commit()
             c.execute("SELECT id FROM user WHERE email = ?",(args["email"],))
             global userId
@@ -126,9 +124,9 @@ class myinfo(flask.views.MethodView):
     def get(self):
         conn = sqlite3.connect("todo.sqlite")
         c = conn.cursor()
-        users = c.execute("SELECT id,first_name,last_name,company,plan,email FROM user WHERE id = ?",(userId,))
-        ids = [dict(id=str(user[0]),first_name=str(user[1]),last_name=str(user[2]),company=str(user[3]),plan=str(user[4]),email=str(user[5])) 
-               for user in users.fetchall()]
+        users = c.execute("SELECT id,first_name,last_name,company,plan,email,title FROM user WHERE id = ?",(userId,))
+        ids = [dict(id=str(user[0]),first_name=str(user[1]),last_name=str(user[2]),company=str(user[3]),plan=str(user[4]),email=str(user[5]),
+                    title=str(user[6])) for user in users.fetchall()]
         return jsonify({ "success": True,
                         "users": ids })
         
@@ -136,8 +134,8 @@ class myinfo(flask.views.MethodView):
         conn = sqlite3.connect("todo.sqlite")
         c = conn.cursor()
         args = json.loads(request.data)
-        c.execute("UPDATE user SET first_name = ? , last_name = ? , company = ?, email = ? WHERE id = ?",(args["firstName"],args["lastName"],
-                                                                                                   args["company"],args["email"],userId))
+        c.execute("UPDATE user SET first_name = ? , last_name = ? , company = ?, email = ? , title = ? WHERE id = ?",(args["firstName"],
+                                                                        args["lastName"],args["company"],args["email"],args["title"],userId))
         conn.commit()
         return jsonify({ "success": True })
         
@@ -147,16 +145,16 @@ class myPortal (flask.views.MethodView):
         conn = sqlite3.connect("todo.sqlite")
         c = conn.cursor()
         cur = c.execute("SELECT payment,name_on_card,card_number,CVC,valid_until,owner_of_account,BIC,IBAN,bank_account_number,first_name,plan, "
-        "registered FROM user WHERE id = ?" , (userId,))
+        "registered,title FROM user WHERE id = ?" , (userId,))
         entries = [dict(payment=str(row[0]), nameOnCard=str(row[1]), cardNumber=str(row[2]), cvc=str(row[3]), validUntil=str(row[4]),
                     owner=str(row[5]),BIC=str(row[6]),IBAN=str(row[7]),bankAccountNumber=str(row[8]),username=str(row[9]),plan=str(row[10]),
-                    registered=str(row[11])) for row in cur.fetchall()]
+                    registered=str(row[11]),title=str(row[12])) for row in cur.fetchall()]
         return jsonify({
             "success": True,
             "paymentData": [{ "payment": item["payment"], "nameOnCard": item["nameOnCard"], "cardNumber": item["cardNumber"], "cvc": item["cvc"], 
                              "validUntil": item["validUntil"], "owner": item["owner"], "BIC": item["BIC"], "IBAN": item["IBAN"], 
                              "bankAccountNumber": item["bankAccountNumber"], "username": item["username"], "plan": item["plan"], 
-                              "registered": item["registered"]} for item in entries],
+                              "registered": item["registered"],"title": item["title"]} for item in entries],
             "user": userId
         })
         

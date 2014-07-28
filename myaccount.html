@@ -34,6 +34,13 @@
 				<label> Last name </label>
 				<input ng-hide="editData" readonly ng-model = "last_name" type="text">
 				<input ng-show="editData" required type="text" ng-model="editedLastName" placeholder="Enter last name">
+				<label> Title </label>
+				<input ng-hide="editData" readonly ng-model = "title" type="text">
+				<div ng-show="editData" class="popup">
+				    <select required="required" ng-model="editedTitle" ng-change="Title(editedTitle)" ng-options="title for title in titles" required="required">
+					    <option class="" value=""></option>
+			        </select>
+		    	</div>
 				<label> Company </label>
 				<input ng-hide="editData" readonly ng-model = "company" type="text">
 				<input ng-show="editData" required type="text" ng-model="editedCompany" placeholder="Enter company">
@@ -45,7 +52,7 @@
 				<p></p>
 				<button class="btn-primary" ng-hide="editData" ng-click="editData = true"> Edit Data</button>
 				<p></p>
-				<button class="btn-primary" ng-show="editData" ng-click="save(editedFirstName,editedLastName,editedCompany,editedEmail)">
+				<button class="btn-primary" ng-show="editData" ng-click="save(editedFirstName,editedLastName,editedCompany,editedEmail,editedTitle)">
 				Save changes</button>
 				<p></p>
 				<button class="btn-primary" ng-click="todos()">Back to todo</button>
