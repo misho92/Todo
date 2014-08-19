@@ -37,7 +37,8 @@
 		    <p></p>
 		    <div ng-repeat="item in items">
 			    <input type="checkbox" ng-model="item.done" ng-change="change(item,item.done)">
-			    <input type="text" ng-model="item.task" size="100" style="width: 500px" readonly>
+			    <!-- REVIEW: Use existing bootstrap classes for size. Do not use inline styles. Also for all other inputs -->
+			    <input type="text" ng-model="item.task" size="100" style="width: 500px" readonly>			    
 			    <button class="btn-primary" ng-click="deleteTodo(item,item.task)"> Delete</button>
 			    <button class="btn-primary" ng-click="editTodo = true"> Edit</button>
 			    <div ng-show="editTodo" class="popup">
@@ -46,6 +47,7 @@
 		    	</div>
 		    </div>
 		    <input type="checkbox" ng-model="mark" ng-click="markAll()"> Mark all as completed </input>
+		    <!-- REVIEW: Remove all &nbsp -->
 		    &nbsp &nbsp &nbsp
 		    <input type="checkbox" ng-model="unmark" ng-click="unmarkAll()"> Unmark all as completed </input>
 		    <p></p>
