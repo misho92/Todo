@@ -54,12 +54,29 @@ app.factory("Todos", ["$resource", function($resource) {
 	   });
 	}]);
 
+// REVIEW: "TodosDelete" is an odd name id you also update. INtegration this into factory "Todos"
+// REVIEW: Please decide wether to use "Todos" or "Tasks". Currently backend uses Task instead of Todo
 app.factory("TodosDelete", ["$resource", function($resource) {
 	   return $resource("/todo/:task", null,{
+// REVIEW: You should not add "Todo" in the names. This is obvious. Name like "delete" and "put"
 		   "deleteTodo": {method: "DELETE"},
 		   "editTodo": {method: "PUT"}
 	   });
 	}]);
+
+// REVIEW: The following definitions are not REST, but RPC. Please just use resources like Mark. You can then add payload data to the post like a boolean for mark / unmark
+// e.g.
+// app.factory("Mark", ["$resource", function($resource) {
+//	   return $resource("/mark", null,{
+//		   "mark": {method: "PUT"}
+//	   });
+//	}]);
+//
+// data { "mark" : true, "all" : true } for marking all or { "mark" : false, "todos" : ["id1", "id2"] } for unmarking 2 todos
+//
+// or take a look at http://www.l1ghtm4n.com/post/53259404576/patterns-for-rest-api-bulk-operations for some other ideas
+//
+// Please note POST should rather be a PUT in this case as we do not create a new resource, but updating it.
 
 app.factory("MarkAllTodos", ["$resource", function($resource) {
 	   return $resource("/mark/markAll", null,{
@@ -85,6 +102,7 @@ app.factory("UnmarkSingleTodo", ["$resource", function($resource) {
 	   });
 	}]);
 
+// REVIEW: Same here as above. Please make it restful by just using the factory "Todos"
 app.factory("DeleteAllTodos", ["$resource", function($resource) {
 	   return $resource("/todo/all", null,{
 		   "deleteAll": {method: "DELETE"}
@@ -164,8 +182,11 @@ app.controller("PortalController",["$scope","$window","Portal","Todos", function
 		$scope.username = data.paymentData[0]["title"] + " " + data.paymentData[0]["username"];
 		$scope.paymentMethod = data.paymentData[0]["payment"];
 		$scope.editedPaymentMethod = $scope.paymentMethod
-		if($scope.paymentMethod == "Credit Card") $scope.credit = true;
-		else $scope.credit = false;
+		// REVIEW: Please ident all oneline ifs like this:
+		if($scope.paymentMethod == "Credit Card")
+		  $scope.credit = true;
+		else
+		  $scope.credit = false;
 		$scope.nameOnCard = data.paymentData[0]["nameOnCard"];
 		$scope.cardNumber = data.paymentData[0]["cardNumber"];
 		$scope.cvc = data.paymentData[0]["cvc"];

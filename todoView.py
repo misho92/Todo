@@ -9,6 +9,8 @@ import time
 
 userId = 0
 
+#REVIEW: Change classes according to suggestions on RESTful API written in app.js
+
 # several classes implementing the different methods - GET, POST, PUT and DELETE. Get invoked in todo.py when handling urls
 class todo(flask.views.MethodView):
     
