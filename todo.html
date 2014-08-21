@@ -1,3 +1,5 @@
+<!-- todo html file which is the primary page as it holds the actual list of todos with some manipulation to it among marking/unmarking/deleting/editing a 
+single one as done, marking/unmarking/deleting all or deleting only the ones that are marked as done -->
 <!doctype html>
 <html ng-app="todo">
 	<head>
@@ -9,50 +11,41 @@
 		<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.0-beta.14/angular-resource.min.js"></script>
 	</head>
 	<body>
-		<p></p>
-		<div id="divTodo">
+		<div class="row" id="divTodo">
 		    <form ng-controller="TodosController">
 			    <div class="navbar navbar-inverse navbar-fixed-top">
 				    <div class="navbar-inner">
 					    <div class="container-fluid">
 						    <p class="navbar-text pull-right">
-						    	<a href ="/todos"> Home </a>
-						    	&nbsp
-							    <a href="/portal"> My portal</a>
-							   	&nbsp
-							   	<a id="link" href="/myinfo">Hi, {{username}}</a>
-							   	<a href="/signout" class="btn-small btn-primary" ng-click="signout()"> Sign out</a>
+						    	<a href ="../todos"> Home </a>
+							    <a href="../portal"> My portal</a>
+							   	<a id="link" href="../myinfo">Hi, {{username}}</a>
+							   	<a href="../signout" class="btn-small btn-primary" ng-click="signout()"> Sign out</a>
 						    </p>
 					    </div>
 				    </div>
 			    </div>
-		    <p></p>
 			<h1 align="center"> My ToDo List </h1>
-			<p></p>
-		    <input required type="text" id="todoText" ng-model="todoText" size="100" style="width: 500px" placeholder="add new todo here"/>
+		    <input class="span6" required type="text" id="todoText" ng-model="todoText" size="100" placeholder="add new todo here"/>
 		    <input class="btn-primary" type="submit" ng-click="addTodo()" value="Insert todo"/>
-		    <p></p>
-		    <span>Left: {{left()}}</span>
+		    <p> <span>Left: {{left()}}</span>
 		    <span>Total: {{items.length}}</span>
-		    <p></p>
+		    </p>
 		    <div ng-repeat="item in items">
 			    <input type="checkbox" ng-model="item.done" ng-change="change(item,item.done)">
-			    <input type="text" ng-model="item.task" size="100" style="width: 500px" readonly>
-			    <button class="btn-primary" ng-click="deleteTodo(item,item.task)"> Delete</button>
+			    <input class="span6" type="text" ng-model="item.todo" size="100" readonly>
+			    <button class="btn-primary" ng-click="deleteTodo(item,item.todo)"> Delete</button>
 			    <button class="btn-primary" ng-click="editTodo = true"> Edit</button>
 			    <div ng-show="editTodo" class="popup">
-				    <input ng-model="edittedTodo" type="text" size="100" style="width: 500px" placeholder="{{place(item.task)}}"/>
-				    <button class="btn-primary" ng-click="saveTodo(edittedTodo,item.task)"> Save ToDo</button>
+				    <input class="span6" ng-model="edittedTodo" type="text" size="100" placeholder="{{place(item.todo)}}"/>
+				    <button class="btn-primary" ng-click="saveTodo(edittedTodo,item.todo)"> Save ToDo</button>
 		    	</div>
 		    </div>
 		    <input type="checkbox" ng-model="mark" ng-click="markAll()"> Mark all as completed </input>
-		    &nbsp &nbsp &nbsp
-		    <input type="checkbox" ng-model="unmark" ng-click="unmarkAll()"> Unmark all as completed </input>
-		    <p></p>
-		    <button class="btn-primary" ng-if="left() != items.length && left()!=0" ng-click="deleteAllCompleted()"> Delete All Completed</button>
-		    <p></p>
+		    <p><input type="checkbox" ng-model="unmark" ng-click="unmarkAll()"> Unmark all completed </input></p>
+		    <p><button class="btn-primary" ng-if="left() != items.length && left()!=0" ng-click="deleteAllCompleted()"> Delete All Completed</button></p>
 		    <span ng-if="left()==0 && items.length!=0" class="animate-if">
-		    	<button class="btn-primary" ng-click="deleteAll()"> Delete All</button>
+		    	<p><button class="btn-primary" ng-click="deleteAll()"> Delete All</button></p>
 			</span>
 		    </form>      
 	    </div>

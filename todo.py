@@ -1,6 +1,8 @@
+# this is the engine of the project with its settings and api endpoints
+
 from __future__ import with_statement
 from flask import Flask, send_file, make_response,jsonify,request
-from todoView import todo,mark,account,signin,myinfo,todoPutAndDelete,myPortal
+from todoView import Todos,Mark,Register,Signin,Account,Portal
 import sqlite3
 from werkzeug.security import check_password_hash
 from flask_httpauth import HTTPBasicAuth
@@ -11,13 +13,12 @@ app.config.from_object(__name__)
 app.config.from_envvar("FLASKR_SETTINGS",silent=True)
 
 # add url rules with the corresponding view and method
-app.add_url_rule("/todo",   view_func=todo.as_view("todo"), methods=["GET","POST"])
-app.add_url_rule("/todo/<string:task>", view_func=todoPutAndDelete.as_view("todoDelete"), methods=["PUT", "DELETE"])
-app.add_url_rule("/mark/<string:action>", view_func=mark.as_view("mark"), methods=["POST"])
-app.add_url_rule("/account", view_func=account.as_view("account"), methods=["POST"])
-app.add_url_rule("/signin", view_func=signin.as_view("signin"), methods=["POST"])
-app.add_url_rule("/myaccount", view_func=myinfo.as_view("myinfo"), methods=["GET","PUT"])
-app.add_url_rule("/myportal", view_func=myPortal.as_view("myPortal"), methods=["GET","PUT"])
+app.add_url_rule("/todo",   view_func=Todos.as_view("Todos"), methods=["GET","POST","PUT", "DELETE"])
+app.add_url_rule("/mark", view_func=Mark.as_view("Mark"), methods=["PUT"])
+app.add_url_rule("/account", view_func=Register.as_view("Register"), methods=["POST"])
+app.add_url_rule("/signin", view_func=Signin.as_view("Signin"), methods=["POST"])
+app.add_url_rule("/myaccount", view_func=Account.as_view("Account"), methods=["GET","PUT"])
+app.add_url_rule("/myportal", view_func=Portal.as_view("Portal"), methods=["GET","PUT"])
 
 # make_response(open("index.html").read()) for no caching
 
@@ -38,7 +39,7 @@ def get_password(email):
     except:
             return jsonify({ "success": False })
     if exists == 1 and result == True:
-        signin.post(signin(),id)
+        Signin.post(Signin(),id)
         return request.authorization.password
     return None
 

@@ -1,3 +1,6 @@
+# this file consists of several classes. Each of them has a couple of functions which corresponds to the rest calls and execute some database activities
+# based on the rest verb used
+
 from flask import request, jsonify
 import sqlite3
 import flask.views
@@ -9,20 +12,20 @@ import time
 
 userId = 0
 
-# several classes implementing the different methods - GET, POST, PUT and DELETE. Get invoked in todo.py when handling urls
-class todo(flask.views.MethodView):
+# several classes implementing the different methods - GET, POST, PUT and DELETE. Get invoked in todo.py when handling endpoints
+class Todos(flask.views.MethodView):
     
 # get request
     def get(self):
         conn = sqlite3.connect("todo.sqlite")
         c = conn.cursor()
-        cur = c.execute("SELECT * FROM task WHERE user_id = ?", (userId,))
+        cur = c.execute("SELECT * FROM todo WHERE user_id = ?", (userId,))
         entries = [dict(id=str(row[0]), title=str(row[1]), done=str(row[2]), user_id=str(row[3])) for row in cur.fetchall()]
         c.execute("SELECT first_name,plan,title FROM user WHERE id = ?", (userId,))
         row = c.fetchone()
         return jsonify({
             "success": True,
-            "todoList": [{ "task": item["title"], "id": item["id"], "done": item["done"], "user_id": item["user_id"] } for item in entries],
+            "todoList": [{ "todo": item["title"], "id": item["id"], "done": item["done"], "user_id": item["user_id"] } for item in entries],
             "row": row
         })
 
@@ -32,57 +35,52 @@ class todo(flask.views.MethodView):
         c = conn.cursor()
         args = json.loads(request.data)
         # parametrized query
-        c.execute("INSERT INTO task(title,done,user_id) VALUES(?,0,?)", (args["task"],userId))
+        c.execute("INSERT INTO todo(title,done,user_id) VALUES(?,0,?)", (args["todo"],userId))
         conn.commit()
         return jsonify({ "success": True })
  
-class todoPutAndDelete (flask.views.MethodView):
-    
-# delete request
-    def delete(self,task):
+    def delete(self):
         conn = sqlite3.connect("todo.sqlite")
         c = conn.cursor()
-        if task == "all":
-            c.execute("DELETE FROM task WHERE user_id = ? ", (userId,))
-        else:
-            c.execute("DELETE FROM task WHERE task.title = ? AND user_id = ?", (task,userId))
+        c.execute("DELETE FROM todo WHERE user_id = ? ", (userId,))
         conn.commit()
         return jsonify({ "success": True })
 
     # put request
-    def put(self,task):
+    def put(self):
         conn = sqlite3.connect("todo.sqlite")
         c = conn.cursor()
         args = json.loads(request.data)
-        if task == "allCompleted":
-            for task in args["tasks"]:
-                if task["done"] == 1:
-                    c.execute("DELETE FROM task WHERE title = ? AND user_id = ?",(task["task"],userId))
+        if args["edit"] == "deleteAllCompleted":
+            for todo in args["todos"]:
+                if todo["done"] == 1:
+                    c.execute("DELETE FROM todo WHERE title = ? AND user_id = ?",(todo["todo"],userId))
+        elif args["edit"] == "one":
+            c.execute("UPDATE todo SET title = ? WHERE title = ? AND user_id = ? ", (args["newtodo"],args["todo"],userId))
         else:
-            c.execute("UPDATE task SET title = ? WHERE title = ? AND user_id = ? ", (args["newTask"],task,userId))
+            c.execute("DELETE FROM todo WHERE todo.title = ? AND user_id = ?", (args["todo"],userId))
         conn.commit()
         return jsonify({ "success": True })
     
-class mark(flask.views.MethodView):
+class Mark(flask.views.MethodView):
     
 # post request
-    def post(self,action):
+    def put(self):
         conn = sqlite3.connect("todo.sqlite")
         c = conn.cursor()
-        if action == "markAll":
-            c.execute("UPDATE task SET done = 1 WHERE user_id = ? ",(userId,))
-        elif action == "unmarkAll":
-            c.execute("UPDATE task SET done = 0 WHERE user_id = ? ",(userId,))
-        elif action == "mark":
-            args = json.loads(request.data)
-            c.execute("UPDATE task SET done = 1 WHERE title = ? AND user_id = ?",(args["task"],userId))
-        elif action == "unmark":
-            args = json.loads(request.data)
-            c.execute("UPDATE task SET done = 0 WHERE title = ? AND user_id = ?",(args["task"],userId))
+        args = json.loads(request.data)
+        if args["mark"] == True and args["all"] == False:
+            c.execute("UPDATE todo SET done = 1 WHERE title = ? AND user_id = ?",(args["todo"],userId))
+        elif args["mark"] == False and args["all"] == False:
+            c.execute("UPDATE todo SET done = 0 WHERE title = ? AND user_id = ?",(args["todo"],userId))
+        elif args["mark"] == True and args["all"] == True:
+            c.execute("UPDATE todo SET done = 1 WHERE user_id = ? ",(userId,))
+        elif args["mark"] == False and args["all"] == True:
+            c.execute("UPDATE todo SET done = 0 WHERE user_id = ? ",(userId,))
         conn.commit()
         return jsonify({ "success": True })
 
-class account(flask.views.MethodView):
+class Register(flask.views.MethodView):
     
     def post(self):
         conn = sqlite3.connect("todo.sqlite")
@@ -112,14 +110,14 @@ class account(flask.views.MethodView):
         else: 
             return jsonify({ "success": False })
     
-class signin(flask.views.MethodView):
+class Signin(flask.views.MethodView):
     
     def post(self,id):
         global userId 
         userId = id
 
 
-class myinfo(flask.views.MethodView):
+class Account(flask.views.MethodView):
     
     def get(self):
         conn = sqlite3.connect("todo.sqlite")
@@ -139,7 +137,7 @@ class myinfo(flask.views.MethodView):
         conn.commit()
         return jsonify({ "success": True })
         
-class myPortal (flask.views.MethodView):
+class Portal (flask.views.MethodView):
     
     def get(self):
         conn = sqlite3.connect("todo.sqlite")
@@ -200,6 +198,6 @@ class myPortal (flask.views.MethodView):
         #cancel plan
         else:
             c.execute("UPDATE user SET plan = '' WHERE id = ?", (userId,))
-            c.execute("DELETE FROM task WHERE user_id = ?", (userId,))
+            c.execute("DELETE FROM todo WHERE user_id = ?", (userId,))
             conn.commit()
             return jsonify({ "success": True })

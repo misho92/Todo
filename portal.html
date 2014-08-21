@@ -1,3 +1,5 @@
+<!-- portal html file which holds user's data regarding payment details and current subscription. Additionally a user can edit payment data, change plan 
+(if allowed to) or even cancel it -->
 <!doctype html>
 <html ng-app="todo">
 	<head>
@@ -9,104 +11,97 @@
 		<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.0-beta.14/angular-resource.min.js"></script>
 	</head>
 	<body>
-	<div ng-controller="PortalController">
-		<div class="navbar navbar-inverse navbar-fixed-top">
-		    <div class="navbar-inner">
-			    <div class="container-fluid">
-				    <p class="navbar-text pull-right">
-				    	<a href ="/todos"> Home </a>
-				    	&nbsp
-					    <a href="/portal"> My portal</a>
-					   	&nbsp
-					   	<a href="/myinfo">Hi, {{username}}</a>
-					   	<a href="/signout" class="btn-small btn-primary" ng-click="signout()"> Sign out</a>
-				    </p>
+		<div class="row" ng-controller="PortalController">
+			<div class="navbar navbar-inverse navbar-fixed-top">
+			    <div class="navbar-inner">
+				    <div class="container-fluid">
+					    <p class="navbar-text pull-right">
+					    	<a href ="../todos"> Home </a>
+						    <a href="../portal"> My portal</a>
+						   	<a href="../myinfo">Hi, {{username}}</a>
+						   	<a href="../signout" class="btn-small btn-primary" ng-click="signout()"> Sign out</a>
+					    </p>
+				    </div>
 			    </div>
 		    </div>
-	    </div>
-		<h1 align="center"> My Portal </h1>
-		<div class="left">
-			<div id="data">
-				<h5> My Payment Data </h5>
-				<label> Payment Method </label>
-				<input ng-hide="editData" readonly ng-model ="paymentMethod" type="text">
-				<div ng-show="editData" class="popup">
-				    <select required="required" ng-model="editedPaymentMethod" ng-change="Payment(editedPaymentMethod)" ng-options="payment for payment in payments" required="required">			        <option class="" value=""></option>
-			        </select>
-		    	</div>
-				<label ng-show="(editData && credit) || credit"> Name on card </label>
-				<input ng-if="!editData && credit" readonly ng-model = "nameOnCard" type="text">
-				<div ng-show="editData && credit" class="popup">
-				    <input required ng-model="editedNameOnCard" type="text" placeholder="Enter name on card"/>
-			        <option class="" value=""></option>
-			        </select>
-		    	</div>
-				<label ng-show="(editData && credit) || credit"> Card Number </label>
-				<input ng-if="!editData && credit" readonly ng-model = "cardNumber" type="text">
-				<div ng-show="editData && credit" class="popup">
-				    <input required maxlength="16" ng-model="editedCardNumber" type="text" placeholder="Enter card number"/>
-			        <option class="" value=""></option>
-			        </select>
-		    	</div>
-				<label ng-show="(editData && credit) || credit"> CVC </label>
-				<input ng-if="!editData && credit" readonly ng-model = "cvc" type="text">
-				<div ng-show="editData && credit" class="popup">
-				    <input required ng-model="editedCVC" type="text" placeholder="Enter CVC"/>
-			        <option class="" value=""></option>
-			        </select>
-		    	</div>
-				<label ng-show="(editData && credit) || credit"> Valid Until </label>
-				<input ng-if="!editData && credit" readonly ng-model = "validUntil" type="text">
-				<div ng-show="editData && credit" class="popup">
-				    <select ng-model="month" ng-options="month for month in months" required="required">
-					<option class="" value="">
-					</select>
-					<p></p>
-					<select ng-model="year" ng-change="validity(month,year)" ng-options="year for year in years" required="required">
+			<h1 align="center"> My Portal </h1>
+			<div class="left">
+				<div id="data">
+					<h5> My Payment Data </h5>
+					<label> Payment Method </label>
+					<input class="span3" ng-hide="editData" readonly ng-model ="paymentMethod" type="text">
+					<div ng-show="editData" class="popup">
+					    <select class="span3" required="required" ng-model="editedPaymentMethod" ng-change="Payment(editedPaymentMethod)" ng-options="payment for payment in payments" required="required">			        <option class="" value=""></option>
+				        </select>
+			    	</div>
+					<label ng-show="(editData && credit) || credit"> Name on card </label>
+					<input class="span3" ng-if="!editData && credit" readonly ng-model = "nameOnCard" type="text">
+					<div ng-show="editData && credit" class="popup">
+					    <input class="span3" required ng-model="editedNameOnCard" type="text" placeholder="Enter name on card"/>
+				        <option class="" value=""></option>
+				        </select>
+			    	</div>
+					<label ng-show="(editData && credit) || credit"> Card Number </label>
+					<input class="span3" ng-if="!editData && credit" readonly ng-model = "cardNumber" type="text">
+					<div ng-show="editData && credit" class="popup">
+					    <input class="span3" required maxlength="16" ng-model="editedCardNumber" type="text" placeholder="Enter card number"/>
+				        <option class="" value=""></option>
+				        </select>
+			    	</div>
+					<label ng-show="(editData && credit) || credit"> CVC </label>
+					<input class="span3" ng-if="!editData && credit" readonly ng-model = "cvc" type="text">
+					<div ng-show="editData && credit" class="popup">
+					    <input class="span3" required ng-model="editedCVC" type="text" placeholder="Enter CVC"/>
+				        <option class="" value=""></option>
+				        </select>
+			    	</div>
+					<label ng-show="(editData && credit) || credit"> Valid Until </label>
+					<input class="span3" ng-if="!editData && credit" readonly ng-model = "validUntil" type="text">
+					<div ng-show="editData && credit" class="popup">
+					    <select class="span3" ng-model="month" ng-options="month for month in months" required="required">
 						<option class="" value="">
-					</select>
-		    	</div>
-		    	<label ng-show="(editData && !credit) || !credit"> Owner of account </label>
-		    	<input ng-if="!editData && !credit" readonly ng-model = "accountOwner" type="text">
-		    	<input required ng-show="editData && !credit" type="text" ng-model="$parent.editedAccountOwner" placeholder="Enter the owner of account">
-		    	<label ng-show="(editData && !credit) || !credit"> BIC </label>
-		    	<input ng-if="!editData && !credit" readonly ng-model = "BIC" type="text">
-		    	<input required ng-if="editData && !credit" type="text" ng-model="$parent.editedBIC" placeholder="Enter the BIC of account">
-		    	<label ng-show="(editData && !credit) || !credit"> IBAN </label>
-		    	<input ng-if="!editData && !credit" readonly ng-model = "IBAN" type="text">
-		    	<input required ng-if="editData && !credit" type="text" ng-model="$parent.editedIBAN" placeholder="Enter the IBAN of account">
-		    	<label ng-show="(editData && !credit) || !credit"> Bank account number </label>
-		    	<input ng-if="!editData && !credit" readonly ng-model = "bankNo" type="text">
-		    	<input required ng-if="editData && !credit" type="text" ng-model="$parent.editedBankNo" placeholder="Enter the bank account number">
-				<button class="btn-primary" ng-hide="editData" ng-click="editData = true"> Edit Data</button>
-				<p></p>
-				<div ng-show="editData" class="popup">
-				    <button class="btn-primary" ng-click="saveData(editedPaymentMethod,editedNameOnCard,editedCardNumber,editedCVC,
-				    editedAccountOwner,editedBIC,editedIBAN,editedBankNo)"> Save Changes</button>
-			   	</div>
-				<p></p>
+						</select>
+						<select class="span3" ng-model="year" ng-change="validity(month,year)" ng-options="year for year in years" required="required">
+							<option class="" value="">
+						</select>
+			    	</div>
+			    	<label ng-show="(editData && !credit) || !credit"> Owner of account </label>
+			    	<input class="span3" ng-if="!editData && !credit" readonly ng-model = "accountOwner" type="text">
+			    	<input class="span3" required ng-show="editData && !credit" type="text" ng-model="$parent.editedAccountOwner" placeholder="Enter the owner of account">
+			    	<label ng-show="(editData && !credit) || !credit"> BIC </label>
+			    	<input class="span3" ng-if="!editData && !credit" readonly ng-model = "BIC" type="text">
+			    	<input class="span3" required ng-if="editData && !credit" type="text" ng-model="$parent.editedBIC" placeholder="Enter the BIC of account">
+			    	<label ng-show="(editData && !credit) || !credit"> IBAN </label>
+			    	<input class="span3" ng-if="!editData && !credit" readonly ng-model = "IBAN" type="text">
+			    	<input class="span3" required ng-if="editData && !credit" type="text" ng-model="$parent.editedIBAN" placeholder="Enter the IBAN of account">
+			    	<label ng-show="(editData && !credit) || !credit"> Bank account number </label>
+			    	<input class="span3" ng-if="!editData && !credit" readonly ng-model = "bankNo" type="text">
+			    	<input class="span3" required ng-if="editData && !credit" type="text" ng-model="$parent.editedBankNo" placeholder="Enter the bank account number">
+					<button class="btn-primary" ng-hide="editData" ng-click="editData = true"> Edit Data</button>
+					<div ng-show="editData" class="popup">
+					    <button class="btn-primary" ng-click="saveData(editedPaymentMethod,editedNameOnCard,editedCardNumber,editedCVC,
+					    editedAccountOwner,editedBIC,editedIBAN,editedBankNo)"> Save Changes</button>
+				   	</div>
+				</div>
+				<div id="back">
+					<button class="btn-primary" ng-click="todos()">Back to todo</button>
+				</div>
 			</div>
-			<div id="back">
-				<button class="btn-primary" ng-click="todos()">Back to todo</button>
-			</div>
-		</div>
-		<div class="right">
+			<div class="right">
 				<div id="data">
 					<h5> My Current subscription details </h5>
 					<label> Current plan </label>
-					<input readonly ng-model ="plan" type="text">
+					<input class="span3" readonly ng-model ="plan" type="text">
 					<label> Started on </label>
-					<input readonly ng-model ="start" type="text">
+					<input class="span3" readonly ng-model ="start" type="text">
 					<label> Length </label>
-					<input readonly ng-model ="length" type="text">
+					<input class="span3" readonly ng-model ="length" type="text">
 					<label> Todo items for this plan </label>
-					<input readonly ng-model ="todosNumber" type="text">
-					<p></p>
-					<button class="btn-primary" ng-click="changePlan()">Change Plan</button>
-					<p></p>
-					<button class="btn btn-danger" ng-click="cancelPlan()">Cancel Plan</button>
+					<input class="span3" readonly ng-model ="todosNumber" type="text">
+					<p><button class="btn-primary" ng-click="changePlan()">Change Plan</button></p>
+					<p><button class="btn btn-danger" ng-click="cancelPlan()">Cancel Plan</button></p>
 				</div>
 			</div>
-	</div>
+		</div>
 	</body>
 </html>

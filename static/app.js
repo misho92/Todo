@@ -50,52 +50,19 @@ app.factory("Register", ["$resource", function($resource) {
 
 app.factory("Todos", ["$resource", function($resource) {
 	   return $resource("/todo", null,{
-		   "insert": {method: "POST"}
-	   });
-	}]);
-
-app.factory("TodosDelete", ["$resource", function($resource) {
-	   return $resource("/todo/:task", null,{
-		   "deleteTodo": {method: "DELETE"},
-		   "editTodo": {method: "PUT"}
-	   });
-	}]);
-
-app.factory("MarkAllTodos", ["$resource", function($resource) {
-	   return $resource("/mark/markAll", null,{
-		   "markAll": {method: "POST"}
-	   });
-	}]);
-
-app.factory("UnmarkAllTodos", ["$resource", function($resource) {
-	   return $resource("/mark/unmarkAll", null,{
-		   "unmarkAll": {method: "POST"}
-	   });
-	}]);
-
-app.factory("MarkSingleTodo", ["$resource", function($resource) {
-	   return $resource("/mark/mark", null,{
-		   "mark": {method: "POST"}
-	   });
-	}]);
-
-app.factory("UnmarkSingleTodo", ["$resource", function($resource) {
-	   return $resource("/mark/unmark", null,{
-		   "unmark": {method: "POST"}
-	   });
-	}]);
-
-app.factory("DeleteAllTodos", ["$resource", function($resource) {
-	   return $resource("/todo/all", null,{
+		   "insert": {method: "POST"},
+		   "deleteSingle": {method: "PUT"},
+		   "edit": {method: "PUT"},
+		   "deleteAllCompletedTodos": {method: "PUT"},
 		   "deleteAll": {method: "DELETE"}
 	   });
 	}]);
 
-app.factory("DeleteCompleted", ["$resource", function($resource) {
-	   return $resource("/todo/allCompleted", null,{
-		   "deleteAllCompletedTodos": {method: "PUT"}
-	   });
-	}]);
+app.factory("Mark",["$resource", function($resource){
+	return $resource("/mark",null,{
+		"mark": {method: "PUT"}
+	});
+}]);
 
 app.controller("SignInController",["$scope","$window", function ($scope,$window){
 // redirects to todos when landed on that page, due to the fact one would only land here(granted access) if credentials are correct
@@ -113,8 +80,10 @@ app.controller("InfoController",["$scope","$window","Account", function ($scope,
 		$scope.username = items.users[0]["title"] + " " + items.users[0]["first_name"];
 		$scope.last_name = items.users[0]["last_name"];
 		$scope.company = items.users[0]["company"];
-		if(items.users[0]["plan"] == "") $scope.plan = "None"
-		else $scope.plan = items.users[0]["plan"];
+		if(items.users[0]["plan"] == "") 
+		  $scope.plan = "None";
+		else 
+		  $scope.plan = items.users[0]["plan"];
 		$scope.email = items.users[0]["email"];
 		$scope.title = items.users[0]["title"];
 	})
@@ -132,8 +101,10 @@ app.controller("InfoController",["$scope","$window","Account", function ($scope,
 								$scope.username = items.users[0]["title"] + " " + items.users[0]["first_name"];
 								$scope.last_name = items.users[0]["last_name"];
 								$scope.company = items.users[0]["company"];
-								if(items.users[0]["plan"] == "") $scope.plan = "None"
-								else $scope.plan = items.users[0]["plan"];
+								if(items.users[0]["plan"] == "") 
+								  $scope.plan = "None";
+								else 
+								  $scope.plan = items.users[0]["plan"];
 								$scope.email = items.users[0]["email"];
 								$scope.title = items.users[0]["title"];
 								$scope.editData = false;
@@ -155,7 +126,7 @@ app.controller("InfoController",["$scope","$window","Account", function ($scope,
 
 //go back button to todos list
 	$scope.todos = function(){
-		$window.location="/todos";
+		$window.location="../todos";
 	}
 }]);
 
@@ -164,8 +135,10 @@ app.controller("PortalController",["$scope","$window","Portal","Todos", function
 		$scope.username = data.paymentData[0]["title"] + " " + data.paymentData[0]["username"];
 		$scope.paymentMethod = data.paymentData[0]["payment"];
 		$scope.editedPaymentMethod = $scope.paymentMethod
-		if($scope.paymentMethod == "Credit Card") $scope.credit = true;
-		else $scope.credit = false;
+		if($scope.paymentMethod == "Credit Card") 
+		  $scope.credit = true;
+		else 
+		  $scope.credit = false;
 		$scope.nameOnCard = data.paymentData[0]["nameOnCard"];
 		$scope.cardNumber = data.paymentData[0]["cardNumber"];
 		$scope.cvc = data.paymentData[0]["cvc"];
@@ -177,9 +150,16 @@ app.controller("PortalController",["$scope","$window","Portal","Todos", function
 		$scope.plan = data.paymentData[0]["plan"];
 		$scope.start = data.paymentData[0]["registered"];
 		$scope.length = "12 months";
-		if($scope.plan == "S") $scope.todosNumber = "10";
-		else $scope.todosNumber = "Unlimited";
-		if($scope.plan == "") $scope.plan = "None", $scope.length = "None", $scope.start = "None", $scope.todosNumber = "None";
+		if($scope.plan == "S") 
+		  $scope.todosNumber = "10";
+		else 
+		  $scope.todosNumber = "Unlimited";
+		if($scope.plan == "") {
+			$scope.plan = "None";
+			$scope.length = "None";
+			$scope.start = "None";
+			$scope.todosNumber = "None";
+		}
 	})
 	
 	$scope.cancelPlan = function(){
@@ -236,8 +216,10 @@ app.controller("PortalController",["$scope","$window","Portal","Todos", function
 	$scope.payments = ["Credit Card","Direct Debit"];
 	$scope.Payment = function(payment) {
     	$scope.editedPaymentMethod = payment;
-    	if(payment == "Credit Card") $scope.credit = true;
-    	else $scope.credit = false;
+    	if(payment == "Credit Card") 
+    	  $scope.credit = true;
+    	else 
+    	  $scope.credit = false;
     }
     
   //auto generated list of year of expiry so that years in past do not turn up
@@ -270,8 +252,10 @@ app.controller("PortalController",["$scope","$window","Portal","Todos", function
 	    							 Portal.get(function(data){
 	    									$scope.paymentMethod = data.paymentData[0]["payment"];
 	    									$scope.editedPaymentMethod = $scope.paymentMethod
-	    									if($scope.paymentMethod == "Credit Card") $scope.credit = true;
-	    									else $scope.credit = false;
+	    									if($scope.paymentMethod == "Credit Card") 
+	    									  $scope.credit = true;
+	    									else 
+	    									  $scope.credit = false;
 	    									$scope.nameOnCard = data.paymentData[0]["nameOnCard"];
 	    									$scope.cardNumber = data.paymentData[0]["cardNumber"];
 	    									$scope.cvc = data.paymentData[0]["cvc"];
@@ -292,7 +276,7 @@ app.controller("PortalController",["$scope","$window","Portal","Todos", function
 	
 //go back button to todos list
 	$scope.todos = function(){
-		$window.location="/todos";
+		$window.location="../todos";
 	}
 }]);
 
@@ -326,12 +310,10 @@ app.controller("RegistrationController",["$scope","$window","Register", function
    					    	  if(items.success){
    					    		  var fakePSP = ["CreditCard:Paymill","Debit:Paymill"];
    					    		  var bearer = "";
-   					    		  if($scope.paymentMethod == "Credit Card") {
-   					    			  bearer = fakePSP[0];
-   					    		  }
-   					    		  else{
-   					    			  bearer = fakePSP[1];
-   					    		  }
+   					    		  if($scope.paymentMethod == "Credit Card")
+   					    			bearer = fakePSP[0];
+   					    		  else
+   					    			bearer = fakePSP[1];
    					    		  signupService = new IteroJS.Signup();
    					    		  paymentService = new IteroJS.Payment({ publicApiKey : "53d604d651f4599a9c52c2b9" }, 
    					    		  function (ready){alert("Ok")}, 
@@ -373,8 +355,10 @@ app.controller("RegistrationController",["$scope","$window","Register", function
 	$scope.payments = ["Credit Card","Direct Debit"];
 	$scope.Payment = function(payment) {
     	$scope.paymentMethod = payment;
-    	if(payment == "Credit Card") $scope.credit = true;
-    	else $scope.credit = false;
+    	if(payment == "Credit Card") 
+    	  $scope.credit = true;
+    	else 
+    	  $scope.credit = false;
     }
     $scope.paymentMethod = {
         payment: ""
@@ -407,12 +391,12 @@ app.controller("RegistrationController",["$scope","$window","Register", function
     	$scope.plan = plan;
     }
     $scope.goBack = function(){
-    	$window.location="/signin";
+    	$window.location="../signin";
     }
     
 }])
 
-app.controller("TodosController",["$scope","$window","Todos","TodosDelete","MarkAllTodos","UnmarkAllTodos","MarkSingleTodo","UnmarkSingleTodo","DeleteAllTodos","DeleteCompleted", function ($scope,$window,Todos,TodosDelete,MarkAllTodos,UnmarkAllTodos,MarkSingleTodo,UnmarkSingleTodo,DeleteAllTodos,DeleteCompleted) {
+app.controller("TodosController",["$scope","$window","Todos","Mark", function ($scope,$window,Todos,Mark) {
 	$scope.items = [];
 	var plan = "";
 	Todos.get(function(items){
@@ -420,16 +404,19 @@ app.controller("TodosController",["$scope","$window","Todos","TodosDelete","Mark
 		$scope.username = items.row[2] + " " + items.row[0];
 		plan = items.row[1];
 		angular.forEach($scope.items, function(item) {
-	  		if(item.done == 1) item.done = true;
+	  		if(item.done == 1) 
+	  		  item.done = true;
 		});
-		if($scope.left()==0 && $scope.items.length!=0) $scope.mark = true;
+		if($scope.left()==0 && $scope.items.length!=0) 
+		  $scope.mark = true;
 	})
 
 // add todo
 	$scope.addTodo = function () {
 		var flag = false;
 		for(var i = 0; i < $scope.items.length; i++){
-			if($scope.items[i]["task"] == $scope.todoText) flag=true;
+			if($scope.items[i]["todo"] == $scope.todoText) 
+			  flag=true;
 		}
 		if(flag){
 			alert("No duplicates.Item already in list");
@@ -441,7 +428,7 @@ app.controller("TodosController",["$scope","$window","Todos","TodosDelete","Mark
 				alert("You reached the maximum storage for your plan S. You can switch to plan L for unlimited items");
 			}
 			else{
-		        Todos.insert({task: $scope.todoText},function(items){
+		        Todos.insert({todo: $scope.todoText},function(items){
 							 if(items.success){
 							 } else {
 								 alert("Adding of item failed");
@@ -451,7 +438,8 @@ app.controller("TodosController",["$scope","$window","Todos","TodosDelete","Mark
 				Todos.get(function(items){
 					$scope.items = items.todoList;
 					angular.forEach($scope.items, function(item) {
-						if(item.done == 1) item.done = true;
+						if(item.done == 1) 
+						  item.done = true;
 			    	});
 					$scope.mark = false;
 			    })
@@ -467,16 +455,19 @@ app.controller("TodosController",["$scope","$window","Todos","TodosDelete","Mark
 	$scope.left = function() {
 	    var count = 0;
 	    angular.forEach($scope.items, function(item) {
-	    	if(item.done == false) count++;
+	    	if(item.done == false) 
+	    	  count++;
 	    });
 	    return count;
 	  };
 	
-//delete particular task
-	$scope.deleteTodo = function(item,task){
-		TodosDelete.deleteTodo({task: task},function(items){
-			if(items.success) $scope.items.splice($scope.items.indexOf(item), 1);
-			else alert("Error in deleting");
+//delete particular todo
+	$scope.deleteTodo = function(item,todo){
+		Todos.deleteSingle({},{edit: "deleteOne",todo: todo},function(items){
+			if(items.success) 
+			  $scope.items.splice($scope.items.indexOf(item), 1);
+			else 
+			  alert("Error in deleting");
 		})
 	};
 
@@ -487,7 +478,7 @@ app.controller("TodosController",["$scope","$window","Todos","TodosDelete","Mark
 
 	$scope.markAll = function(){
 		if($scope.items.length != 0){
-			MarkAllTodos.markAll(function(items){
+			Mark.mark({mark: true, all: true}, function(items){
 							   if(items.success){
 							   } else {
 								   alert("Marking of items failed");
@@ -496,7 +487,8 @@ app.controller("TodosController",["$scope","$window","Todos","TodosDelete","Mark
 			Todos.get(function(items){
 				$scope.items = items.todoList;
 				angular.forEach($scope.items, function(item) {
-			  		if(item.done == 1) item.done = true;
+			  		if(item.done == 1) 
+			  		  item.done = true;
 				});
 				$scope.mark = true;
 		    	$scope.unmark = false;
@@ -508,7 +500,7 @@ app.controller("TodosController",["$scope","$window","Todos","TodosDelete","Mark
 	}
 	$scope.unmarkAll = function(){
 		if($scope.items.length != 0){
-			UnmarkAllTodos.unmarkAll(function(items){
+			Mark.mark({mark: false, all: true}, function(items){
 							   if(items.success){
 							   } else {
 								   alert("Unmarking of items failed");
@@ -517,7 +509,8 @@ app.controller("TodosController",["$scope","$window","Todos","TodosDelete","Mark
 			Todos.get(function(items){
 				$scope.items = items.todoList;
 				angular.forEach($scope.items, function(item) {
-			  		if(item.done == 1) item.done = true;
+			  		if(item.done == 1) 
+			  		  item.done = true;
 				});
 				$scope.mark = false;
 		    	$scope.unmark = true;
@@ -528,10 +521,10 @@ app.controller("TodosController",["$scope","$window","Todos","TodosDelete","Mark
 		}
 	} 
 
-// change status of task either done or not
+// change status of todo either done or not
 	$scope.change = function (item,done){
 		if(done==true){
-	        MarkSingleTodo.mark({},{task: item.task},function(items){
+	        Mark.mark({},{mark: true, all: false, todo: item.todo},function(items){
 						   if(items.success){
 						   } else {
 							   alert("Marking of item failed");
@@ -540,14 +533,15 @@ app.controller("TodosController",["$scope","$window","Todos","TodosDelete","Mark
 		Todos.get(function(items){
 			$scope.items = items.todoList;
 			angular.forEach($scope.items, function(item) {
-				if(item.done == 1) item.done = true;
+				if(item.done == 1) 
+				  item.done = true;
 			});
 			$scope.mark = false;
 			$scope.unmark = false;
 		})
 		}
 		else {
-	        UnmarkSingleTodo.unmark({},{task: item.task},function(items){
+	        Mark.mark({},{mark: false, all: false, todo: item.todo},function(items){
 						   if(items.success){
 						   } else {
 							   alert("Unmarking of item failed");
@@ -556,7 +550,8 @@ app.controller("TodosController",["$scope","$window","Todos","TodosDelete","Mark
 			Todos.get(function(items){
 				$scope.items = items.todoList;
 				angular.forEach($scope.items, function(item) {
-			  		if(item.done == 1) item.done = true;
+			  		if(item.done == 1) 
+			  		  item.done = true;
 				});
 			})
 		}
@@ -564,7 +559,7 @@ app.controller("TodosController",["$scope","$window","Todos","TodosDelete","Mark
 
 // delete all todos from the list
 	$scope.deleteAll = function(){
-		DeleteAllTodos.deleteAll({},function(items){
+		Todos.deleteAll({},function(items){
 			if(items.success) {
 				$scope.items = [];
 			    $scope.mark = false;
@@ -574,12 +569,13 @@ app.controller("TodosController",["$scope","$window","Todos","TodosDelete","Mark
 
 // deletes all todos marked as done
 	 $scope.deleteAllCompleted = function(){
-		 DeleteCompleted.deleteAllCompletedTodos({},{tasks: $scope.items},function(items){
+		 Todos.deleteAllCompletedTodos({},{edit: "deleteAllCompleted", todos: $scope.items},function(items){
 	     		if(items.success){
 	     			Todos.get(function(items){
 	     				$scope.items = items.todoList;
 	     				angular.forEach($scope.items, function(item) {
-	     					if(item.done == 1) item.done = true;
+	     					if(item.done == 1) 
+	     					  item.done = true;
 	     				});
 	     			})
 	     		} else {
@@ -588,26 +584,27 @@ app.controller("TodosController",["$scope","$window","Todos","TodosDelete","Mark
 	     	})
 	}
 	
-//save an edited todo task
-	$scope.saveTodo = function(newTask,task){
-		if(newTask){
-	    TodosDelete.editTodo({task:task},{newTask: newTask},function(items){
+//save an edited todo todo
+	$scope.saveTodo = function(newtodo,todo){
+		if(newtodo){
+	    Todos.edit({},{todo: todo, newtodo: newtodo,edit: "one"},function(items){
 						   if(items.success){
 						   } else {
-							   alert("Editting of task failed");
+							   alert("Editting of todo failed");
 						   }
 					   })
 		Todos.get(function(items){
 			$scope.items = items.todoList;
 			angular.forEach($scope.items, function(item) {
-		  		if(item.done == 1) item.done = true;
+		  		if(item.done == 1) 
+		  		  item.done = true;
 			});
 		})
 	 	}
 	}
 
-//set placeholder when trying to edit task
+//set placeholder when trying to edit todo
 	$scope.place = function(old){
-		return "Current task: " + old;
+		return "Current todo: " + old;
 	}
 }])
