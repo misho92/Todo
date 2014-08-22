@@ -15,7 +15,7 @@ userId = 0
 # several classes implementing the different methods - GET, POST, PUT and DELETE. Get invoked in todo.py when handling endpoints
 class Todos(flask.views.MethodView):
     
-# get request
+# get request, fetching all user's todo list
     def get(self):
         conn = sqlite3.connect("todo.sqlite")
         c = conn.cursor()
@@ -29,7 +29,7 @@ class Todos(flask.views.MethodView):
             "row": row
         })
 
-# post request        
+# post request, inserting a new todo        
     def post(self):
         conn = sqlite3.connect("todo.sqlite")
         c = conn.cursor()
@@ -39,6 +39,7 @@ class Todos(flask.views.MethodView):
         conn.commit()
         return jsonify({ "success": True })
  
+ # delete all todos from user's account
     def delete(self):
         conn = sqlite3.connect("todo.sqlite")
         c = conn.cursor()
@@ -46,7 +47,7 @@ class Todos(flask.views.MethodView):
         conn.commit()
         return jsonify({ "success": True })
 
-    # put request
+    # put request, either deleting all completed todos, or updating one, or deleting a single one
     def put(self):
         conn = sqlite3.connect("todo.sqlite")
         c = conn.cursor()
@@ -64,7 +65,7 @@ class Todos(flask.views.MethodView):
     
 class Mark(flask.views.MethodView):
     
-# post request
+# post request, responsible for marking/unmarking all todos or marking/unmarking a single one
     def put(self):
         conn = sqlite3.connect("todo.sqlite")
         c = conn.cursor()
@@ -81,12 +82,13 @@ class Mark(flask.views.MethodView):
         return jsonify({ "success": True })
 
 class Register(flask.views.MethodView):
-    
+
+# post request for signing up
     def post(self):
         conn = sqlite3.connect("todo.sqlite")
         c = conn.cursor()
         args = json.loads(request.data)
-        # email not used, not in database
+        # email used, not in database -> ok go ahead
         c.execute("SELECT email FROM user where email = ?" , (args["email"],))
         email = c.fetchall()
         if email == []:
@@ -107,6 +109,7 @@ class Register(flask.views.MethodView):
             global userId
             userId = c.fetchone()[0]
             return jsonify({ "success": True })
+        # email already in database -> error
         else: 
             return jsonify({ "success": False })
     
@@ -119,6 +122,7 @@ class Signin(flask.views.MethodView):
 
 class Account(flask.views.MethodView):
     
+# get request to display all data
     def get(self):
         conn = sqlite3.connect("todo.sqlite")
         c = conn.cursor()
@@ -128,6 +132,7 @@ class Account(flask.views.MethodView):
         return jsonify({ "success": True,
                         "users": ids })
         
+ # put request to update the edited data       
     def put(self):
         conn = sqlite3.connect("todo.sqlite")
         c = conn.cursor()
@@ -139,6 +144,7 @@ class Account(flask.views.MethodView):
         
 class Portal (flask.views.MethodView):
     
+# get request to grab all information of the user
     def get(self):
         conn = sqlite3.connect("todo.sqlite")
         c = conn.cursor()
@@ -156,6 +162,7 @@ class Portal (flask.views.MethodView):
             "user": userId
         })
         
+# updating payment methods
     def put(self):
         conn = sqlite3.connect("todo.sqlite")
         c = conn.cursor()

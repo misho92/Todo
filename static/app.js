@@ -1,3 +1,4 @@
+//app settings for routing and declaring which html file to invoke when a give url is entered and which controller is in charge
 var app = angular.module("todo",["ngRoute","ngResource"])
 .config(["$routeProvider", function($routeProvider) {
     $routeProvider
@@ -28,6 +29,7 @@ var app = angular.module("todo",["ngRoute","ngResource"])
         .otherwise({ redirectTo: "/" });
 }])
 
+// app factories which construct resources with some methods in a restful manner
 app.factory("Account", ["$resource", function($resource) {
 	   return $resource("/myaccount", null,{
 		   "saveData": {method: "PUT"}
@@ -65,6 +67,7 @@ app.factory("Mark",["$resource", function($resource){
 }]);
 
 app.controller("SignInController",["$scope","$window", function ($scope,$window){
+	
 // redirects to todos when landed on that page, due to the fact one would only land here(granted access) if credentials are correct
 	var signIn = function () {
 		alert("Credentials correct. Logging you in")
@@ -73,8 +76,10 @@ app.controller("SignInController",["$scope","$window", function ($scope,$window)
 	signIn();
 }])
 
+// info controller responsible for and performing all actions on myinfo page
 app.controller("InfoController",["$scope","$window","Account", function ($scope,$window,Account){
-	//get request for displaying user specific information		
+	
+//get request for displaying user specific information		
 	Account.get(function(items){
 		$scope.first_name = items.users[0]["first_name"];
 		$scope.username = items.users[0]["title"] + " " + items.users[0]["first_name"];
@@ -130,7 +135,10 @@ app.controller("InfoController",["$scope","$window","Account", function ($scope,
 	}
 }]);
 
+//portal controller responsible for and performing all actions on portal page
 app.controller("PortalController",["$scope","$window","Portal","Todos", function ($scope,$window,Portal,Todos){
+	
+//offloading all user specific data
 	Portal.get(function(data){
 		$scope.username = data.paymentData[0]["title"] + " " + data.paymentData[0]["username"];
 		$scope.paymentMethod = data.paymentData[0]["payment"];
@@ -162,6 +170,7 @@ app.controller("PortalController",["$scope","$window","Portal","Todos", function
 		}
 	})
 	
+// cancel plan option
 	$scope.cancelPlan = function(){
 	    if (confirm("Are you sure? All your todos and subscription details would be deleted") == true) {
 	    	Portal.cancelPlan({payment: null, plan: null},function(result){
@@ -175,6 +184,7 @@ app.controller("PortalController",["$scope","$window","Portal","Todos", function
 	    }
 	}
 	
+//change of plan option, only if possible (upgrade - S to L at anytime, downgrade L to S only within 7 days of registration)
 	$scope.changePlan = function(){
 			var date = new Date();
 			formattedDate = date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate();
@@ -222,7 +232,7 @@ app.controller("PortalController",["$scope","$window","Portal","Todos", function
     	  $scope.credit = false;
     }
     
-  //auto generated list of year of expiry so that years in past do not turn up
+//auto generated list of year of expiry so that years in past do not turn up
     $scope.months = [1,2,3,4,5,6,7,8,9,10,11,12];
     $scope.years = [];
     for(var i = 0; i < 5; i++){
@@ -232,7 +242,8 @@ app.controller("PortalController",["$scope","$window","Portal","Todos", function
     	$scope.month = month;
     	$scope.year = year;
     }
-    
+
+// save edited data
     $scope.saveData = function(paymentMethod,nameOnCard,cardNumber,cvc,owner,BIC,IBAN,bankAccountNumber){
     	//earlier in THIS year
         if($scope.month < (new Date().getMonth() + 1) && $scope.year == new Date().getFullYear()){
@@ -280,6 +291,7 @@ app.controller("PortalController",["$scope","$window","Portal","Todos", function
 	}
 }]);
 
+//registration controller responsible for and performing all actions on signup page
 app.controller("RegistrationController",["$scope","$window","Register", function ($scope,$window,Register){
 	
 //register function checks if the supplied card details are valid (date of expire not in past)
@@ -396,9 +408,12 @@ app.controller("RegistrationController",["$scope","$window","Register", function
     
 }])
 
+// todos controller responsible for and performing all actions on todo page
 app.controller("TodosController",["$scope","$window","Todos","Mark", function ($scope,$window,Todos,Mark) {
 	$scope.items = [];
 	var plan = "";
+	
+// todos get request loading all user specific data
 	Todos.get(function(items){
 		$scope.items = items.todoList;
 		$scope.username = items.row[2] + " " + items.row[0];
@@ -411,7 +426,7 @@ app.controller("TodosController",["$scope","$window","Todos","Mark", function ($
 		  $scope.mark = true;
 	})
 
-// add todo
+// add todo, only if not empty, not already in the list, and there is enough space in user's current plan
 	$scope.addTodo = function () {
 		var flag = false;
 		for(var i = 0; i < $scope.items.length; i++){
@@ -475,7 +490,8 @@ app.controller("TodosController",["$scope","$window","Todos","Mark", function ($
 	$scope.signout = function(){  
 		$window.location.href = "/signout";  
 	};
-
+	
+//mark all todos as completed
 	$scope.markAll = function(){
 		if($scope.items.length != 0){
 			Mark.mark({mark: true, all: true}, function(items){
@@ -498,6 +514,8 @@ app.controller("TodosController",["$scope","$window","Todos","Mark", function ($
 			alert("No items yet");
 		}
 	}
+	
+//unmark all todos
 	$scope.unmarkAll = function(){
 		if($scope.items.length != 0){
 			Mark.mark({mark: false, all: true}, function(items){
@@ -521,7 +539,7 @@ app.controller("TodosController",["$scope","$window","Todos","Mark", function ($
 		}
 	} 
 
-// change status of todo either done or not
+// change status of a single todo either done or not
 	$scope.change = function (item,done){
 		if(done==true){
 	        Mark.mark({},{mark: true, all: false, todo: item.todo},function(items){
@@ -584,7 +602,7 @@ app.controller("TodosController",["$scope","$window","Todos","Mark", function ($
 	     	})
 	}
 	
-//save an edited todo todo
+//save an edited todo
 	$scope.saveTodo = function(newtodo,todo){
 		if(newtodo){
 	    Todos.edit({},{todo: todo, newtodo: newtodo,edit: "one"},function(items){
