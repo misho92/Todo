@@ -81,37 +81,25 @@ app.controller("InfoController",["$scope","$window","Account", function ($scope,
 	
 //get request for displaying user specific information		
 	Account.get(function(items){
-		$scope.first_name = items.users[0]["first_name"];
+		$scope.user = items.users[0]
 		$scope.username = items.users[0]["title"] + " " + items.users[0]["first_name"];
-		$scope.last_name = items.users[0]["last_name"];
-		$scope.company = items.users[0]["company"];
 		if(items.users[0]["plan"] == "") 
 		  $scope.plan = "None";
 		else 
 		  $scope.plan = items.users[0]["plan"];
-		$scope.email = items.users[0]["email"];
-		$scope.title = items.users[0]["title"];
 	})
 
 //save function to save the edited fields of my info section
-	$scope.save = function(firstName,lastName,company,email,title){
-		Account.saveData({firstName: firstName,
-						  lastName: lastName,
-						  company: company,
-						  email: email,
-						  title: title},function(items){
+	$scope.save = function(editedUser){
+		Account.saveData({editedUser:editedUser},function(items){
 					   if(items.success){
 						   Account.get(function(items){
-							   $scope.first_name = items.users[0]["first_name"];
+							   $scope.user = items.users[0];
 								$scope.username = items.users[0]["title"] + " " + items.users[0]["first_name"];
-								$scope.last_name = items.users[0]["last_name"];
-								$scope.company = items.users[0]["company"];
 								if(items.users[0]["plan"] == "") 
 								  $scope.plan = "None";
 								else 
 								  $scope.plan = items.users[0]["plan"];
-								$scope.email = items.users[0]["email"];
-								$scope.title = items.users[0]["title"];
 								$scope.editData = false;
 							})
 					   } else {
@@ -141,22 +129,12 @@ app.controller("PortalController",["$scope","$window","Portal","Todos", function
 //offloading all user specific data
 	Portal.get(function(data){
 		$scope.username = data.paymentData[0]["title"] + " " + data.paymentData[0]["username"];
-		$scope.paymentMethod = data.paymentData[0]["payment"];
+		$scope.portal = data.paymentData[0];
 		$scope.editedPaymentMethod = $scope.paymentMethod
-		if($scope.paymentMethod == "Credit Card") 
+		if($scope.portal.paymentMethod == "Credit Card") 
 		  $scope.credit = true;
 		else 
 		  $scope.credit = false;
-		$scope.nameOnCard = data.paymentData[0]["nameOnCard"];
-		$scope.cardNumber = data.paymentData[0]["cardNumber"];
-		$scope.cvc = data.paymentData[0]["cvc"];
-		$scope.validUntil = data.paymentData[0]["validUntil"];
-		$scope.accountOwner = data.paymentData[0]["owner"];
-		$scope.BIC = data.paymentData[0]["BIC"];
-		$scope.IBAN = data.paymentData[0]["IBAN"];
-		$scope.bankNo = data.paymentData[0]["bankAccountNumber"];
-		$scope.plan = data.paymentData[0]["plan"];
-		$scope.start = data.paymentData[0]["registered"];
 		$scope.length = "12 months";
 		if($scope.plan == "S") 
 		  $scope.todosNumber = "10";
@@ -225,7 +203,7 @@ app.controller("PortalController",["$scope","$window","Portal","Todos", function
 	
 	$scope.payments = ["Credit Card","Direct Debit"];
 	$scope.Payment = function(payment) {
-    	$scope.editedPaymentMethod = payment;
+    	$scope.editedPortal.paymentMethod = payment;
     	if(payment == "Credit Card") 
     	  $scope.credit = true;
     	else 
@@ -239,42 +217,26 @@ app.controller("PortalController",["$scope","$window","Portal","Todos", function
     	$scope.years[i] = new Date().getFullYear() + i;
     }
     $scope.validity = function(month,year){
-    	$scope.month = month;
-    	$scope.year = year;
+    	$scope.editedPortal.month = month;
+    	$scope.editedPortal.year = year;
     }
 
 // save edited data
-    $scope.saveData = function(paymentMethod,nameOnCard,cardNumber,cvc,owner,BIC,IBAN,bankAccountNumber){
+    $scope.saveData = function(editedPortal){
     	//earlier in THIS year
         if($scope.month < (new Date().getMonth() + 1) && $scope.year == new Date().getFullYear()){
            	alert("Card not valid. Selected time in the past");
         }
         else{
-	    	Portal.saveData({payment: paymentMethod,
-	    					 nameOnCard: nameOnCard,
-	    					 cardNumber: cardNumber,
-	    					 cvc: cvc,
-	    					 validUntil: $scope.month + "/" + $scope.year,
-	    					 owner: owner,
-	    					 BIC: BIC,
-	    					 IBAN: IBAN,
-	    					 bankAccountNumber: bankAccountNumber},function(data){
+	    	Portal.saveData({editedPortal:editedPortal},function(data){
 	    						 if(data.success){
 	    							 Portal.get(function(data){
-	    									$scope.paymentMethod = data.paymentData[0]["payment"];
+	    								 	$scope.portal = data.paymentData[0];
 	    									$scope.editedPaymentMethod = $scope.paymentMethod
-	    									if($scope.paymentMethod == "Credit Card") 
+	    									if($scope.portal.paymentMethod == "Credit Card") 
 	    									  $scope.credit = true;
 	    									else 
 	    									  $scope.credit = false;
-	    									$scope.nameOnCard = data.paymentData[0]["nameOnCard"];
-	    									$scope.cardNumber = data.paymentData[0]["cardNumber"];
-	    									$scope.cvc = data.paymentData[0]["cvc"];
-	    									$scope.validUntil = data.paymentData[0]["validUntil"];
-	    									$scope.accountOwner = data.paymentData[0]["owner"];
-	    									$scope.BIC = data.paymentData[0]["BIC"];
-	    									$scope.IBAN = data.paymentData[0]["IBAN"];
-	    									$scope.bankNo = data.paymentData[0]["bankAccountNumber"];
 	    									$scope.editData = false;
 	    								})
 	    						 }
@@ -297,28 +259,13 @@ app.controller("RegistrationController",["$scope","$window","Register", function
 //register function checks if the supplied card details are valid (date of expire not in past)
 //additionally checks if email is already in use (database) if everything is correct the registration details are forwarded into database 
 //and in iterojs which results in a new customer in sandbox, finally on success user get signed in and redirected to his todo account
-	$scope.register = function (){
+	$scope.register = function (signUp){
 		//earlier in THIS year
         if($scope.month < (new Date().getMonth() + 1) && $scope.year == new Date().getFullYear()){
            	alert("Card not valid. Selected time in the past");
         }
         else{
-        	Register.signUp({email: $scope.yourEmail,
-   					      pass: $scope.yourPass,
-   					      company: $scope.yourCompany,
-   					      firstName: $scope.yourFName,
-   					      lastName: $scope.yourLName,
-   					      plan: $scope.plan,
-   					      title: $scope.title,
-   					      payment: $scope.paymentMethod,
-   					      nameOnCard: $scope.yourNameOnCard,
-   					      cardNumber: $scope.yourCardNumber,
-   					      cvc: $scope.yourCVC,
-   					      validUntil: $scope.month + "/" + $scope.year,
-   					      ownerOfAccount: $scope.accountOwner,
-   					      BIC: $scope.BIC,
-   					      IBAN: $scope.IBAN,
-   					      bankAccountNumber: $scope.bankNo},function(items){
+        	Register.signUp({signUp:signUp},function(items){
    					    	  if(items.success){
    					    		  var fakePSP = ["CreditCard:Paymill","Debit:Paymill"];
    					    		  var bearer = "";
@@ -334,18 +281,18 @@ app.controller("RegistrationController",["$scope","$window","Register", function
    					    		      "planVariantId": "53d60e1851f4599a9c52c2d5"
    					    		  };
    					    		  var customer = {
-   					    			  "firstName": $scope.yourFName,
-   					    			  "lastName": $scope.yourLName,
-   					    			  "emailAddress": $scope.yourEmail,
-   					    			  "customFields.title": $scope.title
+   					    			  "firstName": $scope.signUp.FName,
+   					    			  "lastName": $scope.signUp.LName,
+   					    			  "emailAddress": $scope.signUp.email,
+   					    			  "customFields.title": $scope.signUp.title
    					    		  };
    					    		  var paymentData = {
    					    			  "bearer": "InvoicePayment",//bearer,
-   					    			  "cardNumber": $scope.yourCardNumber,
-   					    			  "expiryMonth": $scope.month,
-   					    			  "expiryYear": $scope.year,
-   					    			  "cardHolder": $scope.yourNameOnCard,
-   					    			  "cvc": $scope.yourCVC
+   					    			  "cardNumber": $scope.signUp.cardNumber,
+   					    			  "expiryMonth": $scope.signUp.month,
+   					    			  "expiryYear": $scope.signUp.year,
+   					    			  "cardHolder": $scope.signUp.nameOnCard,
+   					    			  "cvc": $scope.signUp.CVC
    					    		  };
    					    		  signupService.subscribe(paymentService, cart, customer, paymentData,
    					    		      function (subscribeResult) {

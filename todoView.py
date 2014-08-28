@@ -53,9 +53,7 @@ class Todos(flask.views.MethodView):
         c = conn.cursor()
         args = json.loads(request.data)
         if args["edit"] == "deleteAllCompleted":
-            for todo in args["todos"]:
-                if todo["done"] == 1:
-                    c.execute("DELETE FROM todo WHERE title = ? AND user_id = ?",(todo["todo"],userId))
+            c.execute("DELETE FROM todo WHERE user_id = ? AND done = 1",(userId,))
         elif args["edit"] == "one":
             c.execute("UPDATE todo SET title = ? WHERE title = ? AND user_id = ? ", (args["newtodo"],args["todo"],userId))
         else:
@@ -89,23 +87,26 @@ class Register(flask.views.MethodView):
         c = conn.cursor()
         args = json.loads(request.data)
         # email used, not in database -> ok go ahead
-        c.execute("SELECT email FROM user where email = ?" , (args["email"],))
+        c.execute("SELECT email FROM user where email = ?" , (args["signUp"]["email"],))
         email = c.fetchall()
         if email == []:
             # pass stored as salt hash not just plain text
-            password = generate_password_hash(args["pass"])
+            password = generate_password_hash(args["signUp"]["pass"])
             date = strftime("%Y-%m-%d", gmtime())
-            if args["payment"] == "Credit Card":
+            if args["signUp"]["paymentMethod"] == "Credit Card":
+                validUntil = str(args["signUp"]["month"]) + "/" + str(args["signUp"]["year"])
                 c.execute("INSERT INTO user (email,first_name,last_name,company,password,plan,registered,payment,name_on_card,card_number,CVC," 
-                "valid_until,title) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)",(args["email"],args["firstName"],args["lastName"],args["company"],password,args["plan"],
-                                                    date,args["payment"],args["nameOnCard"],args["cardNumber"],args["cvc"],args["validUntil"],args["title"]))
+                "valid_until,title) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)",(args["signUp"]["email"],args["signUp"]["FName"],args["signUp"]["LName"],
+                args["signUp"]["company"],password,args["signUp"]["plan"],date,args["signUp"]["paymentMethod"],args["signUp"]["nameOnCard"],
+                args["signUp"]["cardNumber"],args["signUp"]["CVC"],validUntil,args["signUp"]["title"]))
                 conn.commit()
             else:
                 c.execute("INSERT INTO user (email,first_name,last_name,company,password,plan,registered,payment,owner_of_account,BIC,IBAN," 
-                "bank_account_number,title) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)",(args["email"],args["firstName"],args["lastName"],args["company"],password,
-                                args["plan"],date,args["payment"],args["ownerOfAccount"],args["BIC"],args["IBAN"],args["bankAccountNumber"],args["title"]))
+                "bank_account_number,title) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)",(args["signUp"]["email"],args["signUp"]["FName"],args["signUp"]["LName"],
+                args["signUp"]["company"],password,args["signUp"]["plan"],date,args["signUp"]["paymentMethod"],args["signUp"]["accountOwner"],
+                args["signUp"]["BIC"],args["signUp"]["IBAN"],args["signUp"]["bankNo"],args["signUp"]["title"]))
                 conn.commit()
-            c.execute("SELECT id FROM user WHERE email = ?",(args["email"],))
+            c.execute("SELECT id FROM user WHERE email = ?",(args["signUp"]["email"],))
             global userId
             userId = c.fetchone()[0]
             return jsonify({ "success": True })
@@ -137,8 +138,8 @@ class Account(flask.views.MethodView):
         conn = sqlite3.connect("todo.sqlite")
         c = conn.cursor()
         args = json.loads(request.data)
-        c.execute("UPDATE user SET first_name = ? , last_name = ? , company = ?, email = ? , title = ? WHERE id = ?",(args["firstName"],
-                                                                        args["lastName"],args["company"],args["email"],args["title"],userId))
+        c.execute("UPDATE user SET first_name = ? , last_name = ? , company = ?, email = ? , title = ? WHERE id = ?",(args["editedUser"]["editedFirstName"],
+        args["editedUser"]["editedLastName"],args["editedUser"]["editedCompany"],args["editedUser"]["editedEmail"],args["editedUser"]["editedTitle"],userId))
         conn.commit()
         return jsonify({ "success": True })
         
@@ -155,10 +156,10 @@ class Portal (flask.views.MethodView):
                     registered=str(row[11]),title=str(row[12])) for row in cur.fetchall()]
         return jsonify({
             "success": True,
-            "paymentData": [{ "payment": item["payment"], "nameOnCard": item["nameOnCard"], "cardNumber": item["cardNumber"], "cvc": item["cvc"], 
-                             "validUntil": item["validUntil"], "owner": item["owner"], "BIC": item["BIC"], "IBAN": item["IBAN"], 
-                             "bankAccountNumber": item["bankAccountNumber"], "username": item["username"], "plan": item["plan"], 
-                              "registered": item["registered"],"title": item["title"]} for item in entries],
+            "paymentData": [{ "paymentMethod": item["payment"], "nameOnCard": item["nameOnCard"], "cardNumber": item["cardNumber"], "cvc": item["cvc"], 
+                             "validUntil": item["validUntil"], "accountOwner": item["owner"], "BIC": item["BIC"], "IBAN": item["IBAN"], 
+                             "bankNo": item["bankAccountNumber"], "username": item["username"], "plan": item["plan"], 
+                              "start": item["registered"],"title": item["title"]} for item in entries],
             "user": userId
         })
         
@@ -168,23 +169,24 @@ class Portal (flask.views.MethodView):
         c = conn.cursor()
         args = json.loads(request.data)
         #edit payment data of credit card
-        if args["payment"] == "Credit Card":
+        if args["editedPortal"]["paymentMethod"] == "Credit Card":
+            validUntil = str(args["editedPortal"]["month"]) + "/" + str(args["editedPortal"]["year"])
             c.execute("UPDATE user SET payment = 'Credit Card' , name_on_card = ? , card_number = ? , CVC = ?  , valid_until = ? , "
-            "owner_of_account = '' , BIC = '' , IBAN = '' , bank_account_number = '' WHERE id = ?",(args["nameOnCard"],args["cardNumber"],
-                                                                                                    args["cvc"],args["validUntil"],userId))
+            "owner_of_account = '' , BIC = '' , IBAN = '' , bank_account_number = '' WHERE id = ?",(args["editedPortal"]["nameOnCard"]
+                                            ,args["editedPortal"]["cardNumber"],args["editedPortal"]["CVC"],validUntil,userId))
             conn.commit()
             return jsonify({ "success": True })
         
         #edit payment data of direct debit
-        elif args["payment"] == "Direct Debit":
+        elif args["editedPortal"]["paymentMethod"] == "Direct Debit":
             c.execute("UPDATE user SET payment = 'Direct Debit' , owner_of_account = ? , BIC = ? , IBAN = ? , bank_account_number = ? ," 
-            "name_on_card = '' , card_number = '' ,  CVC = '' , valid_until = ''  WHERE id = ?",(args["owner"],args["BIC"],args["IBAN"],
-                                                                                                args["bankAccountNumber"],userId))
+            "name_on_card = '' , card_number = '' ,  CVC = '' , valid_until = ''  WHERE id = ?",(args["editedPortal"]["accountOwner"],
+                                         args["editedPortal"]["BIC"],args["editedPortal"]["IBAN"],args["editedPortal"]["bankNo"],userId))
             conn.commit()
             return jsonify({ "success": True })
         
         #change plan
-        elif args["plan"] != None:
+        elif args["editedPortal"]["plan"] != None:
             if args["date"] != None:
                 c.execute("SELECT registered FROM user WHERE id = ?",(userId,))
                 registered = c.fetchone()[0]

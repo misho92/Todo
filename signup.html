@@ -6,29 +6,29 @@
 		<link href="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.1/css/bootstrap-combined.min.css" rel="stylesheet">
 		<!-- <script type="text/javascript" src="https://sandbox.pactas.com/selfService/iterojs"></script> -->
 		<script type="text/javascript" src="http://itero.demo.pactas.com/selfService/iterojs"></script>
-		<script type="text/javascript" src="http://127.0.0.1:5000/app.js"></script>
-		<link href="http://127.0.0.1:5000/styles.css" rel="stylesheet">
+		<script type="text/javascript" src="/static/app.js"></script>
+		<link href="/static/styles.css" rel="stylesheet">
 		<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.0-beta.14/angular-route.min.js"></script>
 		<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.0-beta.14/angular-resource.min.js"></script>
 	</head>
 	<body>
 		<div class="row" id="div" ng-controller="RegistrationController">
 			<p> Personal Information </p>
-			<input class="span3" id="email" required type="email" ng-model="yourEmail" placeholder="Enter your email">
-			<input class="span3" id="password" required type="password" ng-model="yourPass" placeholder="Enter your password">
-			<input class="span3" id="company" required type="text" ng-model="yourCompany" placeholder="Enter your company">
-			<input class="span3" id="fName" required type="text" ng-model="yourFName" placeholder="Enter your first name">
-			<input class="span3" id="lName" required type="text" ng-model="yourLName" placeholder="Enter your last name">
+			<input class="span3" id="email" required type="email" ng-model="signUp.email" placeholder="Enter your email">
+			<input class="span3" id="password" required type="password" ng-model="signUp.pass" placeholder="Enter your password">
+			<input class="span3" id="company" required type="text" ng-model="signUp.company" placeholder="Enter your company">
+			<input class="span3" id="fName" required type="text" ng-model="signUp.FName" placeholder="Enter your first name">
+			<input class="span3" id="lName" required type="text" ng-model="signUp.LName" placeholder="Enter your last name">
 			<p> Choose your title </p>
 			<div>
-				<select class="span3" class="span3" ng-model="title" ng-change="Title(title)" ng-options="title for title in titles" required="required">
+				<select class="span3" class="span3" ng-model="signUp.title" ng-change="Title(signUp.title)" ng-options="title for title in titles" required="required">
 				<option class="" value=""></option>
 				</select>
 			</div>
 			<p> Choose your plan </p>
 			<div>
 				<i class="icon icon-info-sign" title="S - Small plan is just for 10 todo items, where as L - Large gives you unlimited number of todos. You can downgrade from L to S within the first 7 days of registration, where as upgrade is possible at any time"></i>
-				<p><select class="span3" ng-model="plan" ng-change="Plan(plan)" ng-options="plan for plan in plans" required="required">
+				<p><select class="span3" ng-model="signUp.plan" ng-change="Plan(signUp.plan)" ng-options="plan for plan in plans" required="required">
 				<option class="" value=""></option>
 				</select>
 				</p>
@@ -37,26 +37,26 @@
 			<div>
 			    <div>
 			        Select Payment Method:
-			        <select class="span3" ng-model="paymentMethod" ng-change="Payment(paymentMethod)" ng-options="payment for payment in payments" required="required">
+			        <select class="span3" ng-model="signUp.paymentMethod" ng-change="Payment(signUp.paymentMethod)" ng-options="payment for payment in payments" required="required">
 			        	<option class="" value=""></option>
 			        </select>
 			    </div>
 			</div>
-			<input class="span3" ng-show="credit" id="nameOnCard" type="text" ng-model="yourNameOnCard" placeholder="Enter name on card">
-			<input class="span3" ng-show="credit" id="number" maxlength="16" type="text" ng-model="yourCardNumber" placeholder="Enter your card number">
-			<input class="span3" ng-show="credit" id="cvc" type="text" ng-model="yourCVC" placeholder="Enter your CVC">
+			<input class="span3" ng-show="credit" id="nameOnCard" type="text" ng-model="signUp.nameOnCard" placeholder="Enter name on card">
+			<input class="span3" ng-show="credit" id="number" maxlength="16" type="text" ng-model="signUp.cardNumber" placeholder="Enter your card number">
+			<input class="span3" ng-show="credit" id="cvc" type="text" ng-model="signUp.CVC" placeholder="Enter your CVC">
 			<p ng-show="credit"> Valid until</p>
-			<select class="span3" ng-show="credit" ng-model="month" ng-options="month for month in months" required="required">
+			<select class="span3" ng-show="credit" ng-model="signUp.month" ng-options="month for month in months" required="required">
 				<option class="" value="">
 			</select>
-			<select class="span3" ng-show="credit" ng-model="year" ng-change="validity(month,year)" ng-options="year for year in years" required="required">
+			<select class="span3" ng-show="credit" ng-model="signUp.year" ng-change="validity(signUp.month,signUp.year)" ng-options="year for year in years" required="required">
 				<option class="" value="">
 			</select>
-			<input class="span3" required ng-if="credit == false" type="text" ng-model="$parent.accountOwner" placeholder="Enter the owner of account">
-			<input class="span3" required ng-if="credit == false" type="text" ng-model="$parent.BIC" placeholder="Enter the BIC of account">
-			<input class="span3" required ng-if="credit == false" type="text" ng-model="$parent.IBAN" placeholder="Enter the IBAN of account">
-			<input class="span3" required ng-if="credit == false" type="text" ng-model="$parent.bankNo" placeholder="Enter the bank account number">
-			<p><button class="btn-primary" ng-click="register()">Register</button></p>
+			<input class="span3" required ng-if="credit == false" type="text" ng-model="$parent.signUp.accountOwner" placeholder="Enter the owner of account">
+			<input class="span3" required ng-if="credit == false" type="text" ng-model="$parent.signUp.BIC" placeholder="Enter the BIC of account">
+			<input class="span3" required ng-if="credit == false" type="text" ng-model="$parent.signUp.IBAN" placeholder="Enter the IBAN of account">
+			<input class="span3" required ng-if="credit == false" type="text" ng-model="$parent.signUp.bankNo" placeholder="Enter the bank account number">
+			<p><button class="btn-primary" ng-click="register(signUp)">Register</button></p>
 			<button class="btn-primary" ng-click="goBack()">Go back</button>
 		</div>
 	</body>

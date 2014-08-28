@@ -52,14 +52,6 @@ def unauthorized():
 def todos():
     return send_file("todo.html")
 
-@app.route("/app.js")
-def js():
-    return send_file("static/app.js")
-
-@app.route("/styles.css")
-def css():
-    return send_file("static/styles.css")
-
 @app.route("/signout")
 def logout():
     return send_file("signout.html")
