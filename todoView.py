@@ -187,14 +187,14 @@ class Portal (flask.views.MethodView):
         
         #change plan
         elif args["editedPortal"]["plan"] != None:
-            if args["date"] != None:
+            if args["editedPortal"]["date"] != None:
                 c.execute("SELECT registered FROM user WHERE id = ?",(userId,))
                 registered = c.fetchone()[0]
                 registered = time.mktime(datetime.datetime.strptime(registered, "%Y-%m-%d").timetuple())
-                changePlanRequestDate = time.mktime(datetime.datetime.strptime(args["date"], "%Y-%m-%d").timetuple())
+                changePlanRequestDate = time.mktime(datetime.datetime.strptime(args["editedPortal"]["date"], "%Y-%m-%d").timetuple())
                 # 604800 is the number of seconds in a week, if the request is valid ( within 7 days of the registration let the downgrade proceed
                 if changePlanRequestDate - 604800 <= registered:
-                    c.execute("UPDATE user SET plan = ? WHERE id = ?", (args["plan"],userId))
+                    c.execute("UPDATE user SET plan = ? WHERE id = ?", (args["editedPortal"]["plan"],userId))
                     conn.commit()
                     return jsonify({ "success": True })
                 else:

@@ -136,14 +136,14 @@ app.controller("PortalController",["$scope","$window","Portal","Todos", function
 		else 
 		  $scope.credit = false;
 		$scope.length = "12 months";
-		if($scope.plan == "S") 
+		if($scope.portal.plan == "S") 
 		  $scope.todosNumber = "10";
 		else 
 		  $scope.todosNumber = "Unlimited";
-		if($scope.plan == "") {
-			$scope.plan = "None";
+		if($scope.portal.plan == "") {
+			$scope.portal.plan = "None";
 			$scope.length = "None";
-			$scope.start = "None";
+			$scope.portal.start = "None";
 			$scope.todosNumber = "None";
 		}
 	})
@@ -151,11 +151,15 @@ app.controller("PortalController",["$scope","$window","Portal","Todos", function
 // cancel plan option
 	$scope.cancelPlan = function(){
 	    if (confirm("Are you sure? All your todos and subscription details would be deleted") == true) {
-	    	Portal.cancelPlan({payment: null, plan: null},function(result){
+	    	editedPortal = {
+	    			paymentMethod: null,
+	    			plan: null
+	    	}
+	    	Portal.cancelPlan({editedPortal: editedPortal},function(result){
 	    		if(result.success){
-	    			$scope.plan = "None";
+	    			$scope.portal.plan = "None";
 	    			$scope.length = "None";
-	    			$scope.start = "None";
+	    			$scope.portal.start = "None";
 	    			$scope.todosNumber = "None";
 	    		}
 	    	})
@@ -166,14 +170,19 @@ app.controller("PortalController",["$scope","$window","Portal","Todos", function
 	$scope.changePlan = function(){
 			var date = new Date();
 			formattedDate = date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate();
-			if($scope.plan == "L"){
+			if($scope.portal.plan == "L"){
 				if (confirm("Are you sure you want to change your plan to S?") == true) {
 					Todos.get(function(items){
 						if(items.todoList.length <= 10){
-							Portal.changePlan({plan: "S",date: formattedDate, payment: null},function(result){
+							editedPortal = {
+					    			paymentMethod: null,
+					    			plan: "S",
+					    			date: formattedDate
+					    	}
+							Portal.changePlan({editedPortal:editedPortal},function(result){
 								if(result.success){
 									alert("Plan successfully downgraded to S. The maximum capacity for plan S is 10 todo items only.");
-									$scope.plan = "S";
+									$scope.portal.plan = "S";
 									$scope.todosNumber = "10";
 								} else {
 									alert("7 days from registration have passed, thus you are no longer allowed to downgrade your plan.");
@@ -188,10 +197,15 @@ app.controller("PortalController",["$scope","$window","Portal","Todos", function
 			}
 		else{
 			if (confirm("Are you sure you want to change your plan to L?") == true) {
-				Portal.changePlan({plan: "L",date: null,payment: null},function(result){
+				editedPortal = {
+		    			paymentMethod: null,
+		    			plan: "L",
+		    			date: null
+		    	}
+				Portal.changePlan({editedPortal:editedPortal},function(result){
 					if(result.success){
 						   alert("Plan successfully upgraded to L. You can have unlimited number of items.");
-						   $scope.plan = "L";
+						   $scope.portal.plan = "L";
 						   $scope.todosNumber = "Unlimited";
 					   } else {
 						   alert("Error occurred in upgrading your plan.");
